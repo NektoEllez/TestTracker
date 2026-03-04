@@ -3,7 +3,7 @@ import Combine
 import WebKit
 
 @MainActor
-class WebViewModel: ObservableObject {
+class BrowserViewModel: ObservableObject {
     struct SafariDestination: Identifiable, Equatable {
         let url: URL
         var id: String { url.absoluteString }
@@ -21,29 +21,35 @@ class WebViewModel: ObservableObject {
     let initialURL: URL
     
     init(initialURL: URL) {
-        let resolvedLanguageCode = WebLanguageCatalog.normalizedCode(
-            AppStorageManager.shared.selectedWebLanguageCode
-        )
+        let resolvedLanguageCode = Self.systemLanguageCode()
         self.selectedLanguageCode = resolvedLanguageCode
         self.initialURL = initialURL
         
         // Resume from last successful page when available, then enforce selected language.
-        let baseURL = AppStorageManager.shared.lastWebViewURL ?? initialURL
-        self.currentURL = WebViewModel.applyingLanguage(code: resolvedLanguageCode, to: baseURL)
+        let baseURL = AppStorageManager.shared.lastBrowserURL ?? initialURL
+        self.currentURL = BrowserViewModel.applyingLanguage(code: resolvedLanguageCode, to: baseURL)
     }
     
     func saveCurrentURL() {
-        AppStorageManager.shared.lastWebViewURL = currentURL
+        AppStorageManager.shared.lastBrowserURL = currentURL
     }
     
     func selectLanguage(_ code: String) {
-        let normalized = WebLanguageCatalog.normalizedCode(code)
+        let normalized = ContentLanguageCatalog.normalizedCode(code)
         guard selectedLanguageCode != normalized else { return }
         
         selectedLanguageCode = normalized
-        AppStorageManager.shared.selectedWebLanguageCode = normalized
         
         let updatedURL = Self.applyingLanguage(code: normalized, to: currentURL)
+        guard updatedURL != currentURL else { return }
+        currentURL = updatedURL
+    }
+
+    func syncWithSystemLanguage() {
+        let systemCode = Self.systemLanguageCode()
+        guard selectedLanguageCode != systemCode else { return }
+        selectedLanguageCode = systemCode
+        let updatedURL = Self.applyingLanguage(code: systemCode, to: currentURL)
         guard updatedURL != currentURL else { return }
         currentURL = updatedURL
     }
@@ -63,5 +69,15 @@ class WebViewModel: ObservableObject {
         components.queryItems = items
         
         return components.url ?? url
+    }
+
+    private static func systemLanguageCode() -> String {
+        let preferredIdentifier = Locale.preferredLanguages.first ?? Locale.current.identifier
+        let locale = Locale(identifier: preferredIdentifier)
+        let rawCode = locale.languageCode
+            ?? preferredIdentifier.components(separatedBy: "-").first
+            ?? preferredIdentifier.components(separatedBy: "_").first
+            ?? "en"
+        return ContentLanguageCatalog.normalizedCode(rawCode)
     }
 }

@@ -4,28 +4,30 @@ import os
 final class ConfigService: ConfigServiceProtocol, Sendable {
     private enum Constants {
         static let infoPlistConfigURLKey = "ConfigURL"
-        static let fallbackConfigURLString = "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU"
         static let timeout: TimeInterval = 15
         static let isRemoteConfigEnabled = true
     }
     
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "ConfigService")
     
-    private let configURL: URL
+    private let configURL: URL?
     let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
     
     init(bundle: Bundle = .main) {
-        let rawURLString = (bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String)
-        ?? Constants.fallbackConfigURLString
-        
-        guard let url = URL(string: rawURLString) else {
-            preconditionFailure("ConfigURL is invalid")
+        let rawURLString = bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String
+        if let rawURLString {
+            self.configURL = URL(string: rawURLString)
+        } else {
+            self.configURL = nil
         }
-        
-        self.configURL = url
     }
     
     func fetchConfig() async throws -> URL? {
+        guard let configURL else {
+            Self.logger.error("Config URL is missing or invalid, using local module fallback")
+            return nil
+        }
+
         var request = URLRequest(url: configURL)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         request.timeoutInterval = Constants.timeout

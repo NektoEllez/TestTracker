@@ -1,22 +1,22 @@
 import SwiftUI
 
-struct WebViewScreen: View {
-    @StateObject private var viewModel: WebViewModel
+struct BrowserScreen: View {
+    @StateObject private var viewModel: BrowserViewModel
     @Environment(\.toastStore) private var toastStore
     @State private var isShowingLanguageSheet = false
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
+    private let isSettingsOverlayEnabled = false
     
     init(initialURL: URL) {
-        _viewModel = StateObject(wrappedValue: WebViewModel(initialURL: initialURL))
+        _viewModel = StateObject(wrappedValue: BrowserViewModel(initialURL: initialURL))
     }
     
     var body: some View {
         ZStack {
-            WebViewRepresentable(viewModel: viewModel)
+            BrowserRepresentable(viewModel: viewModel)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .ignoresSafeArea()
             
-            if #available(iOS 16.0, *) {
+            if isSettingsOverlayEnabled, #available(iOS 16.0, *) {
                 settingsToolbar
             }
             loadingOverlay
@@ -33,7 +33,7 @@ struct WebViewScreen: View {
             guard let message = newValue else { return }
             toastStore?.show(
                 ToastMessage(
-                    text: "Web error: \(message)",
+                    text: "Network error: \(message)",
                     icon: "wifi.exclamationmark",
                     style: .warning
                 ),
@@ -44,10 +44,13 @@ struct WebViewScreen: View {
         .sheet(item: $viewModel.safariDestination, onDismiss: {
             viewModel.safariDestination = nil
         }) { destination in
-            SafariWebViewRepresentable(url: destination.url)
+            SafariBrowserRepresentable(url: destination.url)
         }
-        .sheet(isPresented: $isShowingLanguageSheet) {
-            WebLanguagePickerSheet(
+        .sheet(isPresented: Binding(
+            get: { isSettingsOverlayEnabled && isShowingLanguageSheet },
+            set: { isShowingLanguageSheet = $0 }
+        )) {
+            ContentLanguagePickerSheet(
                 selectedCode: viewModel.selectedLanguageCode,
                 onSelect: { code in
                     Haptics.selection()
@@ -67,7 +70,7 @@ struct WebViewScreen: View {
                     Haptics.impact(.light)
                     isShowingLanguageSheet = true
                 } label: {
-                    let option = WebLanguageCatalog.option(for: viewModel.selectedLanguageCode)
+                    let option = ContentLanguageCatalog.option(for: viewModel.selectedLanguageCode)
                     HStack(spacing: 8) {
                         Image(systemName: "gearshape")
                             .font(.subheadline.weight(.semibold))
@@ -127,7 +130,7 @@ struct WebViewScreen: View {
     }
 }
 
-private struct WebLanguagePickerSheet: View {
+private struct ContentLanguagePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     let selectedCode: String
     let onSelect: (String) -> Void
@@ -150,7 +153,7 @@ private struct WebLanguagePickerSheet: View {
                 }
                 
                 Section("Language") {
-                    ForEach(WebLanguageCatalog.supported) { option in
+                    ForEach(ContentLanguageCatalog.supported) { option in
                         Button {
                             let tappedCode = option.code
                             pendingSelectionCode = tappedCode

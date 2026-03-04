@@ -13,9 +13,9 @@ final class AppStorageManager {
     
     private enum Keys {
         static let onboardingCompleted = "onboarding_completed"
-        static let lastWebViewURL = "last_webview_url"
+        static let lastBrowserURL = "last_browser_url"
         static let selectedCurrencyCode = "selected_currency_code"
-        static let selectedWebLanguageCode = "selected_web_language_code"
+        static let selectedContentLanguageCode = "selected_content_language_code"
         static let preferredColorScheme = "preferred_color_scheme"
     }
     
@@ -26,15 +26,15 @@ final class AppStorageManager {
         set { defaults.set(newValue, forKey: Keys.onboardingCompleted) }
     }
     
-    // MARK: - WebView Last URL
+    // MARK: - Browser Last URL
     
-    var lastWebViewURL: URL? {
+    var lastBrowserURL: URL? {
         get {
-            guard let string = defaults.string(forKey: Keys.lastWebViewURL) else { return nil }
+            guard let string = defaults.string(forKey: Keys.lastBrowserURL) else { return nil }
             return URL(string: string)
         }
         set {
-            defaults.set(newValue?.absoluteString, forKey: Keys.lastWebViewURL)
+            defaults.set(newValue?.absoluteString, forKey: Keys.lastBrowserURL)
         }
     }
     
@@ -45,11 +45,11 @@ final class AppStorageManager {
         set { defaults.set(newValue, forKey: Keys.selectedCurrencyCode) }
     }
     
-    // MARK: - WebView Language
+    // MARK: - Content Language
     
-    var selectedWebLanguageCode: String {
-        get { defaults.string(forKey: Keys.selectedWebLanguageCode) ?? "en" }
-        set { defaults.set(newValue, forKey: Keys.selectedWebLanguageCode) }
+    var selectedContentLanguageCode: String {
+        get { defaults.string(forKey: Keys.selectedContentLanguageCode) ?? "en" }
+        set { defaults.set(newValue, forKey: Keys.selectedContentLanguageCode) }
     }
     
     var preferredColorSchemeRaw: String {

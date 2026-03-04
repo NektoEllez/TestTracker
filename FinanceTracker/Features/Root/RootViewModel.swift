@@ -5,7 +5,7 @@ enum AppState: Equatable, Sendable {
     case splash
     case onboarding
     case finance
-    case webView(URL)
+    case browser(URL)
 }
 
 @MainActor
@@ -40,17 +40,17 @@ class RootViewModel: ObservableObject {
             switch saved {
                 case .finance:
                     return module1State()
-                case .webView(let url):
+                case .browser(let url):
                     OrientationManager.shared.unlockAll()
-                    return .webView(url)
+                    return .browser(url)
             }
         }
         
         do {
             if let url = try await configService.fetchConfig() {
-                ModuleDecision.webView(url).save()
+                ModuleDecision.browser(url).save()
                 OrientationManager.shared.unlockAll()
-                return .webView(url)
+                return .browser(url)
             } else {
                 ModuleDecision.finance.save()
                 return module1State()

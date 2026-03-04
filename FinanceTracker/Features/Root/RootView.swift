@@ -17,8 +17,8 @@ struct RootView: View {
                 case .finance:
                     FinanceContainerView()
                         .transition(.opacity)
-                case .webView(let url):
-                    WebViewScreen(initialURL: url)
+                case .browser(let url):
+                    BrowserScreen(initialURL: url)
                         .transition(.opacity)
             }
         }

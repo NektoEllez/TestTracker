@@ -1,65 +1,82 @@
 import Foundation
+import UIKit
 import WebKit
 
 @MainActor
-final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-    var viewModel: WebViewModel
-    weak var webView: WKWebView?
+final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+    var viewModel: BrowserViewModel
+    weak var browser: WKWebView?
     weak var refreshControl: UIRefreshControl?
     
     private var progressObservation: NSKeyValueObservation?
+    private weak var backSwipeGesture: UISwipeGestureRecognizer?
+    private weak var forwardSwipeGesture: UISwipeGestureRecognizer?
     
-    init(viewModel: WebViewModel) {
+    init(viewModel: BrowserViewModel) {
         self.viewModel = viewModel
     }
     
-    func configure(_ webView: WKWebView) {
-        self.webView = webView
+    func configure(_ wkView: WKWebView) {
+        self.browser = wkView
         
-        progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
-            let progress = webView.estimatedProgress
+        progressObservation = wkView.observe(\.estimatedProgress, options: [.new]) { [weak self] wkView, _ in
+            let progress = wkView.estimatedProgress
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 guard self.viewModel.estimatedProgress != progress else { return }
                 self.viewModel.estimatedProgress = progress
             }
         }
+
+        let backSwipe = UISwipeGestureRecognizer(target: self, action: #selector(handleBackSwipe))
+        backSwipe.direction = .right
+        backSwipe.cancelsTouchesInView = false
+        backSwipe.numberOfTouchesRequired = 1
+        wkView.addGestureRecognizer(backSwipe)
+        backSwipeGesture = backSwipe
+
+        let forwardSwipe = UISwipeGestureRecognizer(target: self, action: #selector(handleForwardSwipe))
+        forwardSwipe.direction = .left
+        forwardSwipe.cancelsTouchesInView = false
+        forwardSwipe.numberOfTouchesRequired = 1
+        wkView.addGestureRecognizer(forwardSwipe)
+        forwardSwipeGesture = forwardSwipe
     }
     
     func cleanup() {
         progressObservation = nil
-        webView = nil
+        browser = nil
     }
     
     // MARK: - WKNavigationDelegate
     
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    func webView(_ browser: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         publish { model in
             model.isLoading = true
         }
     }
     
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    func webView(_ browser: WKWebView, didFinish navigation: WKNavigation!) {
         refreshControl?.endRefreshing()
         publish { model in
             model.isLoading = false
             model.errorMessage = nil
         }
-        updateNavigationState(from: webView)
-        persistCurrentURL(from: webView)
+        updateNavigationState(from: browser)
+        persistCurrentURL(from: browser)
     }
     
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    func webView(_ browser: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         refreshControl?.endRefreshing()
         publish { model in
             model.isLoading = false
             model.errorMessage = error.localizedDescription
         }
-        updateNavigationState(from: webView)
+        updateNavigationState(from: browser)
     }
     
     func webView(
-        _ webView: WKWebView,
+        _ browser: WKWebView,
         didFailProvisionalNavigation navigation: WKNavigation!,
         withError error: Error
     ) {
@@ -68,11 +85,11 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             model.isLoading = false
             model.errorMessage = error.localizedDescription
         }
-        updateNavigationState(from: webView)
+        updateNavigationState(from: browser)
     }
     
     func webView(
-        _ webView: WKWebView,
+        _ browser: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
@@ -83,7 +100,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             isMainFrame: navigationAction.targetFrame?.isMainFrame ?? false
            ) {
             publish { model in
-                model.safariDestination = WebViewModel.SafariDestination(url: url)
+                model.safariDestination = BrowserViewModel.SafariDestination(url: url)
             }
             decisionHandler(.cancel)
             return
@@ -95,7 +112,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - WKUIDelegate
     
     func webView(
-        _ webView: WKWebView,
+        _ browser: WKWebView,
         createWebViewWith configuration: WKWebViewConfiguration,
         for navigationAction: WKNavigationAction,
         windowFeatures: WKWindowFeatures
@@ -107,10 +124,10 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
                 isMainFrame: false
             ) {
                 publish { model in
-                    model.safariDestination = WebViewModel.SafariDestination(url: url)
+                    model.safariDestination = BrowserViewModel.SafariDestination(url: url)
                 }
             } else {
-                webView.load(URLRequest(url: url))
+                browser.load(URLRequest(url: url))
             }
         }
         return nil
@@ -118,7 +135,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     
     @available(iOS 15.0, *)
     func webView(
-        _ webView: WKWebView,
+        _ browser: WKWebView,
         requestMediaCapturePermissionFor origin: WKSecurityOrigin,
         initiatedByFrame frame: WKFrameInfo,
         type: WKMediaCaptureType,
@@ -130,12 +147,22 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - Actions
     
     @objc func handleRefresh(_ sender: UIRefreshControl) {
-        webView?.reload()
+        browser?.reload()
+    }
+
+    @objc private func handleBackSwipe() {
+        guard let browser, browser.canGoBack else { return }
+        browser.goBack()
+    }
+
+    @objc private func handleForwardSwipe() {
+        guard let browser, browser.canGoForward else { return }
+        browser.goForward()
     }
     
-    private func updateNavigationState(from webView: WKWebView) {
-        let canGoBack = webView.canGoBack
-        let canGoForward = webView.canGoForward
+    private func updateNavigationState(from browser: WKWebView) {
+        let canGoBack = browser.canGoBack
+        let canGoForward = browser.canGoForward
         
         publish { model in
             model.canGoBack = canGoBack
@@ -143,8 +170,8 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
     }
     
-    private func persistCurrentURL(from webView: WKWebView) {
-        guard let url = webView.url else { return }
+    private func persistCurrentURL(from browser: WKWebView) {
+        guard let url = browser.url else { return }
         
         publish { model in
             guard model.currentURL != url else { return }
@@ -155,7 +182,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     
     /// Routes coordinator callbacks through a single MainActor hop and
     /// keeps mutation points centralized for easier state auditing.
-    private func publish(_ update: @escaping (WebViewModel) -> Void) {
+    private func publish(_ update: @escaping (BrowserViewModel) -> Void) {
         Task { @MainActor [weak self] in
             guard let self else { return }
             update(self.viewModel)
@@ -180,7 +207,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
         
         // External top-level links open in SFSafariViewController.
-        // Redirect chains and non-main-frame navigations stay in WKWebView to preserve auth/session flows.
+        // Redirect chains and non-main-frame navigations stay in WKWebView (system API) to preserve auth/session flows.
         return navigationType == .linkActivated || !isMainFrame
     }
     

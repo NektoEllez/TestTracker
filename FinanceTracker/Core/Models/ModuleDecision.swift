@@ -2,7 +2,7 @@ import Foundation
 
 enum ModuleDecision: Equatable {
     case finance
-    case webView(URL)
+    case browser(URL)
     
     // MARK: - Persistence Keys
     
@@ -17,8 +17,8 @@ enum ModuleDecision: Equatable {
             case .finance:
                 defaults.set("finance", forKey: Self.typeKey)
                 defaults.removeObject(forKey: Self.urlKey)
-            case .webView(let url):
-                defaults.set("webView", forKey: Self.typeKey)
+            case .browser(let url):
+                defaults.set("browser", forKey: Self.typeKey)
                 defaults.set(url.absoluteString, forKey: Self.urlKey)
         }
     }
@@ -30,10 +30,10 @@ enum ModuleDecision: Equatable {
         switch type {
             case "finance":
                 return .finance
-            case "webView":
+            case "browser", "webView": // "webView" for migration from old key
                 if let urlString = defaults.string(forKey: urlKey),
                    let url = URL(string: urlString) {
-                    return .webView(url)
+                    return .browser(url)
                 }
                 return nil
             default:

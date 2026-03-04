@@ -15,6 +15,9 @@ struct FinanceContainerView: View {
             .navigationTitle("Finance Tracker")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    analyticsLink
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     currencyMenu
                 }
@@ -105,6 +108,22 @@ struct FinanceContainerView: View {
                 )
                 .appGlassSurface(cornerRadius: 999, style: .interactive)
         }
+    }
+
+    private var analyticsLink: some View {
+        NavigationLink(destination: FinanceAnalyticsScreen(viewModel: viewModel)) {
+            Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
+                .labelStyle(.titleAndIcon)
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Color.cardBackground.opacity(0.28),
+                    in: Capsule()
+                )
+                .appGlassSurface(cornerRadius: 999, style: .interactive)
+        }
+        .accessibilityLabel("Open analytics")
     }
 }
 

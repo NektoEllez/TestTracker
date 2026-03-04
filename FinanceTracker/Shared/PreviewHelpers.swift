@@ -29,7 +29,7 @@ enum PreviewData {
     static let previewStore: TransactionStoreProtocol = {
         let store = PreviewTransactionStore()
         for t in sampleTransactions {
-            store.addTransaction(t)
+            try? store.addTransaction(t)
         }
         return store
     }()
@@ -38,10 +38,25 @@ enum PreviewData {
 private final class PreviewTransactionStore: TransactionStoreProtocol {
     private var transactions: [Transaction] = []
 
-    func loadTransactions() -> [Transaction] { transactions }
-    func saveTransactions(_ t: [Transaction]) { transactions = t }
-    func addTransaction(_ t: Transaction) { transactions.append(t) }
-    func deleteTransaction(id: TransactionID) { transactions.removeAll { $0.id == id } }
+    func loadTransactions() throws -> [Transaction] { transactions.sorted { $0.date > $1.date } }
+
+    func loadTransactionsPage(offset: Int, limit: Int) throws -> [Transaction] {
+        guard offset >= 0, limit > 0 else { return [] }
+        let sorted = try loadTransactions()
+        guard offset < sorted.count else { return [] }
+        let end = min(offset + limit, sorted.count)
+        return Array(sorted[offset..<end])
+    }
+
+    func transactionsCount() throws -> Int { transactions.count }
+
+    func saveTransactions(_ t: [Transaction]) throws { transactions = t }
+
+    func addTransaction(_ t: Transaction) throws { transactions.append(t) }
+
+    func deleteTransaction(id: TransactionID) throws {
+        transactions.removeAll { $0.id == id }
+    }
 }
 
 #endif

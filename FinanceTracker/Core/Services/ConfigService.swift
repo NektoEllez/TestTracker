@@ -6,11 +6,13 @@ final class ConfigService: ConfigServiceProtocol, Sendable {
         static let infoPlistConfigURLKey = "ConfigURL"
         static let fallbackConfigURLString = "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU"
         static let timeout: TimeInterval = 15
+        static let isRemoteConfigEnabled = true
     }
 
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "ConfigService")
 
     private let configURL: URL
+    let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
 
     init(bundle: Bundle = .main) {
         let rawURLString = (bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String)

@@ -1,8 +1,8 @@
-import Foundation
-
 protocol TransactionStoreProtocol {
-    func loadTransactions() -> [Transaction]
-    func saveTransactions(_ transactions: [Transaction])
-    func addTransaction(_ transaction: Transaction)
-    func deleteTransaction(id: TransactionID)
+    func loadTransactions() throws -> [Transaction]
+    func loadTransactionsPage(offset: Int, limit: Int) throws -> [Transaction]
+    func transactionsCount() throws -> Int
+    func saveTransactions(_ transactions: [Transaction]) throws
+    func addTransaction(_ transaction: Transaction) throws
+    func deleteTransaction(id: TransactionID) throws
 }

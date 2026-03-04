@@ -13,7 +13,7 @@ struct OnboardingView: View {
             bottomControls
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground.ignoresSafeArea())
+        .background(Color.appBackgroundGradient.ignoresSafeArea())
     }
 
     private var tabContent: some View {

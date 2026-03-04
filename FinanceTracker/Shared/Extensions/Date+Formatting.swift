@@ -1,20 +1,29 @@
 import Foundation
 
+private enum DateFormatting {
+    static let mediumFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .none
+        return f
+    }()
+    static let shortDayMonthFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM"
+        return f
+    }()
+}
+
 extension Date {
 
     /// "Mar 4, 2026"
     var mediumFormatted: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: self)
+        DateFormatting.mediumFormatter.string(from: self)
     }
 
     /// "4 Mar"
     var shortDayMonth: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM"
-        return formatter.string(from: self)
+        DateFormatting.shortDayMonthFormatter.string(from: self)
     }
 
     /// Returns a date with time components stripped (midnight)

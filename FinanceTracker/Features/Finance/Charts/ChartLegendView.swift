@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChartLegendView: View {
     let segments: [ChartSegment]
+    let currencyCode: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -12,26 +13,35 @@ struct ChartLegendView: View {
     }
 
     private func legendRow(_ segment: ChartSegment) -> some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .center, spacing: 10) {
             Circle()
                 .fill(segment.color)
                 .frame(width: 10, height: 10)
 
             Text(segment.label)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundColor(.primary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(String(format: "%.1f%%", segment.percentage * 100))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .monospacedDigit()
 
-            Text(String(format: "%.1f%%", segment.percentage * 100))
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Text(segment.amount.formattedCurrency(maximumFractionDigits: 0))
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
+                Text(segment.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 0))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .frame(minWidth: 96, alignment: .trailing)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -40,6 +50,9 @@ struct ChartLegendView: View {
         (TransactionCategory.food, 120),
         (TransactionCategory.transport, 80)
     ])
-    return ChartLegendView(segments: segments)
+    return ChartLegendView(
+        segments: segments,
+        currencyCode: "USD"
+    )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }

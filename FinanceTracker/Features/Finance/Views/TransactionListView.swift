@@ -2,7 +2,13 @@ import SwiftUI
 
 struct TransactionListView: View {
     let groups: [TransactionGroup]
+    let currencyCode: String
+    let isLoadingNextPage: Bool
+    let canLoadMore: Bool
+    let paginationErrorMessage: String?
     let onDelete: (TransactionGroup, IndexSet) -> Void
+    let onLoadMore: () -> Void
+    let onRetryLoadMore: () -> Void
 
     var body: some View {
         if groups.isEmpty {
@@ -29,18 +35,28 @@ struct TransactionListView: View {
     }
 
     private var transactionSections: some View {
-        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+        VStack(spacing: 0) {
             ForEach(groups) { group in
                 Section {
                     ForEach(group.transactions) { transaction in
-                        TransactionRowView(transaction: transaction)
+                        TransactionRowView(
+                            transaction: transaction,
+                            currencyCode: currencyCode
+                        )
                             .padding(.horizontal, 16)
                             .padding(.vertical, 4)
                     }
                 } header: {
                     sectionHeader(group.sectionTitle)
                 }
+                .onAppear {
+                    if group.id == groups.last?.id {
+                        onLoadMore()
+                    }
+                }
             }
+
+            paginationFooter
         }
     }
 
@@ -57,14 +73,63 @@ struct TransactionListView: View {
         .padding(.vertical, 8)
         .background(Color.appBackground)
     }
+
+    @ViewBuilder
+    private var paginationFooter: some View {
+        if isLoadingNextPage {
+            VStack(spacing: 8) {
+                DotArcLoaderView(size: 52, dotSize: 10)
+                Text("Loading more...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+        } else if let error = paginationErrorMessage {
+            VStack(spacing: 8) {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Button("Retry", action: onRetryLoadMore)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+        } else if canLoadMore {
+            Color.clear
+                .frame(height: 1)
+        }
+    }
 }
 
 #Preview("Transaction List - Empty") {
-    TransactionListView(groups: [], onDelete: { _, _ in })
+    TransactionListView(
+        groups: [],
+        currencyCode: "USD",
+        isLoadingNextPage: false,
+        canLoadMore: false,
+        paginationErrorMessage: nil,
+        onDelete: { _, _ in },
+        onLoadMore: {},
+        onRetryLoadMore: {}
+    )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 
 #Preview("Transaction List - With Data") {
-    TransactionListView(groups: PreviewData.sampleGroups, onDelete: { _, _ in })
+    TransactionListView(
+        groups: PreviewData.sampleGroups,
+        currencyCode: "USD",
+        isLoadingNextPage: false,
+        canLoadMore: true,
+        paginationErrorMessage: nil,
+        onDelete: { _, _ in },
+        onLoadMore: {},
+        onRetryLoadMore: {}
+    )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }

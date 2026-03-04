@@ -4,6 +4,7 @@ struct SummaryCardsView: View {
     let income: Decimal
     let expenses: Decimal
     let balance: Decimal
+    let currencyCode: String
 
     private var metrics: [SummaryMetric] {
         [
@@ -24,7 +25,10 @@ struct SummaryCardsView: View {
     }
 
     private var cardsContent: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 120), spacing: 12)],
+            spacing: 12
+        ) {
             ForEach(metrics) { metric in
                 summaryCard(metric)
             }
@@ -41,7 +45,7 @@ struct SummaryCardsView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            Text(metric.amount.formattedCurrency(maximumFractionDigits: 0))
+            Text(metric.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 0))
                 .font(.subheadline)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
@@ -50,7 +54,10 @@ struct SummaryCardsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(Color.cardBackground.opacity(0.35))
+        .background(
+            Color.cardBackground.opacity(0.35),
+            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+        )
         .appGlassSurface(cornerRadius: 12)
     }
 }
@@ -68,7 +75,8 @@ private struct SummaryMetric: Identifiable {
     SummaryCardsView(
         income: 1500,
         expenses: 245,
-        balance: 1255
+        balance: 1255,
+        currencyCode: "USD"
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .padding()

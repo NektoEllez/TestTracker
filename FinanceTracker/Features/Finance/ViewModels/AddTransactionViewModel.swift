@@ -3,11 +3,35 @@ import Combine
 
 @MainActor
 final class AddTransactionViewModel: ObservableObject {
-    @Published var amountText: String = ""
+    @Published var amountText: String = "" {
+        didSet {
+            normalizeAmountInput()
+        }
+    }
     @Published var selectedType: TransactionType = .expense
     @Published var selectedCategory: TransactionCategory = .food
     @Published var date: Date = Date()
-    @Published var note: String = ""
+    @Published var note: String = "" {
+        didSet {
+            enforceNoteLimit()
+        }
+    }
+    @Published private(set) var amountErrorMessage: String?
+    @Published var selectedCurrencyCode: String
+
+    let noteLimit = 120
+
+    private var isNormalizingAmount = false
+    private let storageManager: AppStorageManager
+
+    init(storageManager: AppStorageManager) {
+        self.storageManager = storageManager
+        self.selectedCurrencyCode = CurrencyCatalog.normalizedCode(storageManager.selectedCurrencyCode)
+    }
+
+    convenience init() {
+        self.init(storageManager: .shared)
+    }
 
     var availableCategories: [TransactionCategory] {
         switch selectedType {
@@ -19,43 +43,74 @@ final class AddTransactionViewModel: ObservableObject {
     }
 
     var isValid: Bool {
-        guard let amount = parsedAmount else { return false }
-        return amount > .zero
+        amountValidationError == nil
     }
 
     var parsedAmount: Decimal? {
-        let normalized = amountText
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: ",", with: ".")
-
-        guard !normalized.isEmpty else { return nil }
-
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.generatesDecimalNumbers = true
-
-        if let number = formatter.number(from: normalized) as? NSDecimalNumber {
-            return number.decimalValue
-        }
-
-        return Decimal(string: normalized)
+        AmountInputValidator.parseAmount(from: amountText)
     }
 
     func buildTransaction() -> Transaction? {
-        guard let amount = parsedAmount, amount > .zero else { return nil }
+        guard validateForm(), let amount = parsedAmount else { return nil }
+        let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return Transaction(
             amount: amount,
             type: selectedType,
             category: selectedCategory,
             date: date,
-            note: note.isEmpty ? nil : note
+            note: trimmedNote.isEmpty ? nil : trimmedNote
         )
     }
 
     func onTypeChanged() {
         if let first = availableCategories.first {
             selectedCategory = first
+        }
+    }
+
+    func setCurrencyCode(_ code: String) {
+        let normalizedCode = CurrencyCatalog.normalizedCode(code)
+        guard selectedCurrencyCode != normalizedCode else { return }
+        selectedCurrencyCode = normalizedCode
+        storageManager.selectedCurrencyCode = normalizedCode
+    }
+
+    private var amountValidationError: AmountValidationError? {
+        AmountInputValidator.validationError(for: amountText)
+    }
+
+    private func validateForm() -> Bool {
+        amountErrorMessage = amountValidationError?.errorDescription
+        return amountErrorMessage == nil
+    }
+
+    private func normalizeAmountInput() {
+        guard !isNormalizingAmount else { return }
+
+        let sanitized = AmountInputValidator.sanitize(amountText)
+        if sanitized != amountText {
+            isNormalizingAmount = true
+            amountText = sanitized
+            isNormalizingAmount = false
+            return
+        }
+
+        if amountText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            amountErrorMessage = nil
+            return
+        }
+
+        if let validationError = amountValidationError, validationError != .empty {
+            amountErrorMessage = validationError.errorDescription
+        } else {
+            amountErrorMessage = nil
+        }
+    }
+
+    private func enforceNoteLimit() {
+        if note.count > noteLimit {
+            note = String(note.prefix(noteLimit))
         }
     }
 }

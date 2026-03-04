@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TransactionRowView: View {
     let transaction: Transaction
+    let currencyCode: String
 
     var body: some View {
         HStack(spacing: 12) {
@@ -46,13 +47,16 @@ struct TransactionRowView: View {
 
     private var formattedAmount: String {
         let prefix = transaction.type == .income ? "+" : "-"
-        let formatted = transaction.amount.formattedCurrency(maximumFractionDigits: 2)
+        let formatted = transaction.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 2)
         return "\(prefix)\(formatted)"
     }
 }
 
 #Preview("Transaction Row") {
-    TransactionRowView(transaction: PreviewData.sampleTransaction)
+    TransactionRowView(
+        transaction: PreviewData.sampleTransaction,
+        currencyCode: "USD"
+    )
         .frame(maxWidth: .infinity)
         .padding()
 }

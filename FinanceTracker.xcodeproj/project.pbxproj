@@ -7,16 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9A1B2C3D4E5F60718293A4B5 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 9A1B2C3D4E5F60718293A4B6 /* Lottie */; };
+		9B2C3D4E5F60718293A4C0D1 /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = 9B2C3D4E5F60718293A4C0D2 /* DGCharts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		440E16F02F5816C800D81B5E /* FinanceTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FinanceTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		44A0B1002F5816C800D81B5E /* Exceptions for "FinanceTracker" folder in "FinanceTracker" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 440E16EF2F5816C800D81B5E /* FinanceTracker */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		440E16F22F5816C800D81B5E /* FinanceTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				44A0B1002F5816C800D81B5E /* Exceptions for "FinanceTracker" folder in "FinanceTracker" target */,
+			);
 			path = FinanceTracker;
 			sourceTree = "<group>";
 		};
@@ -27,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9A1B2C3D4E5F60718293A4B5 /* Lottie in Frameworks */,
+				9B2C3D4E5F60718293A4C0D1 /* DGCharts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +83,7 @@
 			);
 			name = FinanceTracker;
 			packageProductDependencies = (
-				9A1B2C3D4E5F60718293A4B6 /* Lottie */,
+				9B2C3D4E5F60718293A4C0D2 /* DGCharts */,
 			);
 			productName = FinanceTracker;
 			productReference = 440E16F02F5816C800D81B5E /* FinanceTracker.app */;
@@ -101,7 +114,7 @@
 			mainGroup = 440E16E72F5816C800D81B5E;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				9A1B2C3D4E5F60718293A4B7 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				9B2C3D4E5F60718293A4C0D3 /* XCRemoteSwiftPackageReference "Charts" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 440E16F12F5816C800D81B5E /* Products */;
@@ -262,6 +275,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				EXCLUDED_RESOURCE_FILE_NAMES = Info.plist;
 				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FinanceTracker/Info.plist;
@@ -309,6 +323,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				EXCLUDED_RESOURCE_FILE_NAMES = Info.plist;
 				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FinanceTracker/Info.plist;
@@ -368,21 +383,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		9A1B2C3D4E5F60718293A4B7 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+		9B2C3D4E5F60718293A4C0D3 /* XCRemoteSwiftPackageReference "Charts" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			repositoryURL = "https://github.com/ChartsOrg/Charts.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.5.2;
+				kind = revision;
+				revision = 1bad5469f57628782110b05996d4fa00473abf06;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9A1B2C3D4E5F60718293A4B6 /* Lottie */ = {
+		9B2C3D4E5F60718293A4C0D2 /* DGCharts */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9A1B2C3D4E5F60718293A4B7 /* XCRemoteSwiftPackageReference "lottie-ios" */;
-			productName = Lottie;
+			package = 9B2C3D4E5F60718293A4C0D3 /* XCRemoteSwiftPackageReference "Charts" */;
+			productName = DGCharts;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

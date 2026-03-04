@@ -1,5 +1,3 @@
-import Foundation
-
 struct OnboardingPage: Identifiable {
     let id: String
     let imageName: String

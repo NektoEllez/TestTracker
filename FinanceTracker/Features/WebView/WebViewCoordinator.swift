@@ -5,6 +5,7 @@ import WebKit
 final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     var viewModel: WebViewModel
     weak var webView: WKWebView?
+    weak var refreshControl: UIRefreshControl?
 
     private var progressObservation: NSKeyValueObservation?
 
@@ -39,16 +40,20 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        refreshControl?.endRefreshing()
         publish { model in
             model.isLoading = false
+            model.errorMessage = nil
         }
         updateNavigationState(from: webView)
         persistCurrentURL(from: webView)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        refreshControl?.endRefreshing()
         publish { model in
             model.isLoading = false
+            model.errorMessage = error.localizedDescription
         }
         updateNavigationState(from: webView)
     }
@@ -58,8 +63,10 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         didFailProvisionalNavigation navigation: WKNavigation!,
         withError error: Error
     ) {
+        refreshControl?.endRefreshing()
         publish { model in
             model.isLoading = false
+            model.errorMessage = error.localizedDescription
         }
         updateNavigationState(from: webView)
     }
@@ -69,6 +76,19 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
+        if let url = navigationAction.request.url,
+           shouldOpenInSafari(
+               url: url,
+               navigationType: navigationAction.navigationType,
+               isMainFrame: navigationAction.targetFrame?.isMainFrame ?? false
+           ) {
+            publish { model in
+                model.safariDestination = WebViewModel.SafariDestination(url: url)
+            }
+            decisionHandler(.cancel)
+            return
+        }
+
         decisionHandler(.allow)
     }
 
@@ -81,7 +101,17 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
         if let url = navigationAction.request.url {
-            webView.load(URLRequest(url: url))
+            if shouldOpenInSafari(
+                url: url,
+                navigationType: navigationAction.navigationType,
+                isMainFrame: false
+            ) {
+                publish { model in
+                    model.safariDestination = WebViewModel.SafariDestination(url: url)
+                }
+            } else {
+                webView.load(URLRequest(url: url))
+            }
         }
         return nil
     }
@@ -101,7 +131,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     @objc func handleRefresh(_ sender: UIRefreshControl) {
         webView?.reload()
-        sender.endRefreshing()
+        // endRefreshing() is called in didFinish/didFail to avoid content jumping
     }
 
     private func updateNavigationState(from webView: WKWebView) {
@@ -129,5 +159,30 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             guard let self else { return }
             update(self.viewModel)
         }
+    }
+
+    private func shouldOpenInSafari(
+        url: URL,
+        navigationType: WKNavigationType,
+        isMainFrame: Bool
+    ) -> Bool {
+        guard let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https" else {
+            return false
+        }
+        guard let targetHost = url.host?.lowercased(),
+              let initialHost = viewModel.initialURL.host?.lowercased() else {
+            return false
+        }
+        guard !isSameHostOrSubdomain(targetHost, of: initialHost) else {
+            return false
+        }
+
+        // Keep redirects inside WKWebView to avoid breaking first-party auth flows.
+        return navigationType == .linkActivated || !isMainFrame
+    }
+
+    private func isSameHostOrSubdomain(_ host: String, of baseHost: String) -> Bool {
+        host == baseHost || host.hasSuffix("." + baseHost)
     }
 }

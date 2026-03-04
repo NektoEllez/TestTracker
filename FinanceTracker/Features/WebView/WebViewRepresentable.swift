@@ -19,7 +19,10 @@ struct WebViewRepresentable: UIViewRepresentable {
         configuration.websiteDataStore = WKWebsiteDataStore.default()
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        webView.isOpaque = false
+        webView.backgroundColor = .black
+        webView.scrollView.backgroundColor = .black
 
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
@@ -34,6 +37,7 @@ struct WebViewRepresentable: UIViewRepresentable {
             for: .valueChanged
         )
         webView.scrollView.refreshControl = refreshControl
+        context.coordinator.refreshControl = refreshControl
 
         webView.load(URLRequest(url: viewModel.currentURL))
 

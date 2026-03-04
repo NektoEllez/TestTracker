@@ -3,6 +3,7 @@ import SwiftUI
 struct SplashView: View {
     @State private var isAnimating = false
     @State private var opacity: Double = 0
+    private let logoSize: CGFloat = 200
 
     var body: some View {
         ZStack {
@@ -10,11 +11,12 @@ struct SplashView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 iconView
                 titleView
-                lottieLoader
+                primaryLoader
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .onAppear {
             withAnimation(.easeIn(duration: 0.6)) {
@@ -27,10 +29,12 @@ struct SplashView: View {
     }
 
     private var iconView: some View {
-        Image(systemName: "dollarsign.circle.fill")
-            .font(.system(size: 80))
-            .foregroundColor(.white)
-            .scaleEffect(isAnimating ? 1.1 : 0.95)
+        Image("Logo")
+            .resizable()
+            .scaledToFit()
+            .frame(width: logoSize, height: logoSize)
+            .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: 8)
+            .scaleEffect(isAnimating ? 1.04 : 0.96)
             .opacity(opacity)
     }
 
@@ -42,14 +46,12 @@ struct SplashView: View {
             .opacity(opacity)
     }
 
-    private var lottieLoader: some View {
-        LottieLoaderView(animationName: "Boat_Loader")
-            .frame(width: 90, height: 90)
-            .padding(12)
+    private var primaryLoader: some View {
+        DotArcLoaderView(size: 84, dotSize: 15)
+            .padding(10)
             .background(Color.white.opacity(0.16))
             .appGlassSurface(cornerRadius: 20)
             .opacity(opacity)
-            .padding(.top, 8)
     }
 }
 

@@ -13,9 +13,11 @@ extension View {
             case .regular:
                 self
                     .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             case .interactive:
                 self
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             }
         } else {
             self
@@ -24,6 +26,7 @@ extension View {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
     }
 }

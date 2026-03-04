@@ -30,46 +30,44 @@ class RootViewModel: ObservableObject {
         )
     }
 
-    func determineModule() async {
-        // 1. Onboarding not completed → always show onboarding first
-        if !storageManager.isOnboardingCompleted {
-            appState = .onboarding
-            return
-        }
-
-        // 2. Onboarding done — check saved decision
+    func determineModule() async -> AppState {
+        // 1. Check saved decision first (subsequent launches)
         if let saved = ModuleDecision.load() {
             switch saved {
             case .finance:
-                appState = .finance
-                return
+                return module1State()
             case .webView(let url):
                 OrientationManager.shared.unlockAll()
-                appState = .webView(url)
-                return
+                return .webView(url)
             }
         }
 
-        // 3. First time after onboarding — no saved decision, fetch config
+        // 2. First launch — no saved decision, fetch config during splash
         do {
             if let url = try await configService.fetchConfig() {
                 ModuleDecision.webView(url).save()
                 OrientationManager.shared.unlockAll()
-                appState = .webView(url)
+                return .webView(url)
             } else {
                 ModuleDecision.finance.save()
-                appState = .finance
+                return module1State()
             }
         } catch {
             ModuleDecision.finance.save()
-            appState = .finance
+            return module1State()
         }
     }
 
     func completeOnboarding() {
         storageManager.isOnboardingCompleted = true
-        Task {
-            await determineModule()
+        appState = .finance
+    }
+
+    private func module1State() -> AppState {
+        if !storageManager.isOnboardingCompleted {
+            return .onboarding
+        } else {
+            return .finance
         }
     }
 }

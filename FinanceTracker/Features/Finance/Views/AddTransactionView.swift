@@ -3,14 +3,17 @@ import SwiftUI
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = AddTransactionViewModel()
+    @State private var saveErrorMessage: String?
+    @State private var isShowingSaveError = false
 
-    let onSave: (Transaction) -> Void
+    let onSave: (Transaction) throws -> Void
 
     var body: some View {
         NavigationView {
             Form {
                 typeSection
                 amountSection
+                currencySection
                 categorySection
                 dateSection
                 noteSection
@@ -28,6 +31,11 @@ struct AddTransactionView: View {
                 }
             }
         }
+        .alert("Unable to Save", isPresented: $isShowingSaveError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(saveErrorMessage ?? "Please try again.")
+        }
     }
 
     // MARK: - Sections
@@ -40,6 +48,7 @@ struct AddTransactionView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .onChange(of: viewModel.selectedType) { _ in
+                Haptics.selection()
                 viewModel.onTypeChanged()
             }
         }
@@ -47,9 +56,45 @@ struct AddTransactionView: View {
 
     private var amountSection: some View {
         Section(header: Text("Amount")) {
-            TextField("0.00", text: $viewModel.amountText)
+            TextField("0.00", text: amountInputBinding)
                 .keyboardType(.decimalPad)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
                 .font(.title2)
+
+            Text("Currency: \(viewModel.selectedCurrencyCode)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if let error = viewModel.amountErrorMessage {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+    }
+
+    private var amountInputBinding: Binding<String> {
+        Binding(
+            get: { viewModel.amountText },
+            set: { newValue in
+                viewModel.amountText = AmountInputValidator.sanitize(newValue)
+            }
+        )
+    }
+
+    private var currencySection: some View {
+        Section(header: Text("Currency")) {
+            Picker("Currency", selection: $viewModel.selectedCurrencyCode) {
+                ForEach(CurrencyCatalog.popular) { option in
+                    Text(option.title).tag(option.code)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .onChange(of: viewModel.selectedCurrencyCode) { newCode in
+                Haptics.selection()
+                viewModel.setCurrencyCode(newCode)
+            }
         }
     }
 
@@ -82,6 +127,7 @@ struct AddTransactionView: View {
                 .lineLimit(1)
         }
         .onTapGesture {
+            Haptics.selection()
             viewModel.selectedCategory = category
         }
     }
@@ -96,6 +142,13 @@ struct AddTransactionView: View {
     private var noteSection: some View {
         Section(header: Text("Note (optional)")) {
             TextField("Add a note...", text: $viewModel.note)
+
+            HStack {
+                Spacer()
+                Text("\(viewModel.note.count)/\(viewModel.noteLimit)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
@@ -103,8 +156,13 @@ struct AddTransactionView: View {
 
     private func saveTransaction() {
         guard let transaction = viewModel.buildTransaction() else { return }
-        onSave(transaction)
-        dismiss()
+        do {
+            try onSave(transaction)
+            dismiss()
+        } catch {
+            saveErrorMessage = error.localizedDescription
+            isShowingSaveError = true
+        }
     }
 }
 

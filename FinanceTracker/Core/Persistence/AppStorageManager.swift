@@ -14,6 +14,7 @@ final class AppStorageManager {
     private enum Keys {
         static let onboardingCompleted = "onboarding_completed"
         static let lastWebViewURL = "last_webview_url"
+        static let selectedCurrencyCode = "selected_currency_code"
     }
 
     // MARK: - Onboarding
@@ -33,5 +34,12 @@ final class AppStorageManager {
         set {
             defaults.set(newValue?.absoluteString, forKey: Keys.lastWebViewURL)
         }
+    }
+
+    // MARK: - Currency
+
+    var selectedCurrencyCode: String {
+        get { defaults.string(forKey: Keys.selectedCurrencyCode) ?? "USD" }
+        set { defaults.set(newValue, forKey: Keys.selectedCurrencyCode) }
     }
 }

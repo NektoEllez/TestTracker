@@ -8,9 +8,9 @@ struct SummaryCardsView: View {
     
     private var metrics: [SummaryMetric] {
         [
-            SummaryMetric(title: "Income", amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
-            SummaryMetric(title: "Expenses", amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
-            SummaryMetric(title: "Balance", amount: balance, color: .appBlue, icon: "equal.circle.fill")
+            SummaryMetric(title: String(localized: "income"), amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
+            SummaryMetric(title: String(localized: "expenses"), amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
+            SummaryMetric(title: String(localized: "balance"), amount: balance, color: .appBlue, icon: "equal.circle.fill")
         ]
     }
     

@@ -1,0 +1,80 @@
+/* App */
+"app_title" = "FinanceTracker";
+
+/* Finance */
+"finance_tracker" = "Finanzen";
+"add_transaction" = "Transaktion hinzufügen";
+"analytics" = "Analytik";
+"settings" = "Einstellungen";
+"open_web_version" = "Webversion öffnen";
+"web" = "Web";
+
+/* Theme */
+"theme_system" = "System";
+"theme_light" = "Hell";
+"theme_dark" = "Dunkel";
+"appearance" = "Darstellung";
+
+/* Add Transaction Form */
+"add_transaction_title" = "Transaktion hinzufügen";
+"unable_to_save" = "Speichern fehlgeschlagen";
+"please_try_again" = "Bitte versuchen Sie es erneut.";
+"type" = "Typ";
+"add_note_placeholder" = "Notiz hinzufügen...";
+"currency_label" = "Währung: %@";
+"expense_breakdown" = "Ausgabenaufschlüsselung";
+"loading_chart" = "Diagramm wird geladen...";
+"total" = "Gesamt";
+"transactions" = "Transaktionen";
+"retry" = "Erneut";
+
+/* Add Transaction */
+"expense" = "Ausgabe";
+"income" = "Einnahme";
+"amount" = "Betrag";
+"currency" = "Währung";
+"category" = "Kategorie";
+"date" = "Datum";
+"note_optional" = "Notiz (optional)";
+"save" = "Speichern";
+"cancel" = "Abbrechen";
+
+/* Toasts */
+"transaction_saved" = "Transaktion gespeichert";
+"currency_set_to" = "Währung auf %@ gesetzt";
+
+/* Date */
+"today" = "Heute";
+"yesterday" = "Gestern";
+
+/* Lists */
+"no_transactions" = "Noch keine Transaktionen";
+"tap_to_add" = "Tippen Sie + für die erste Transaktion";
+"loading_more" = "Laden...";
+"no_expense_data" = "Noch keine Ausgabendaten";
+
+/* Settings */
+"close" = "Schließen";
+"ok" = "OK";
+"language" = "Sprache";
+
+/* Analytics */
+"overview" = "Übersicht";
+"average_income" = "Durchschn. Einnahme";
+"average_expense" = "Durchschn. Ausgabe";
+"operations" = "Transaktionen";
+"savings_rate" = "Sparquote";
+"daily_net_flow" = "Täglicher Saldo";
+"top_expense_categories" = "Top-Ausgabenkategorien";
+
+/* Summary */
+"expenses" = "Ausgaben";
+"balance" = "Saldo";
+
+/* Onboarding */
+"skip" = "Überspringen";
+"next" = "Weiter";
+"get_started" = "Loslegen";
+
+/* Browser */
+"loading" = "Laden...";

@@ -4,7 +4,6 @@ struct FinanceContainerView: View {
     @StateObject private var viewModel = FinanceViewModel()
     @Environment(\.toastStore) private var toastStore
     @State private var isShowingSettings = false
-    var onOpenBrowser: (() -> Void)?
 
     var body: some View {
         NavigationView {
@@ -14,24 +13,11 @@ struct FinanceContainerView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.appBackgroundGradient)
-            .navigationTitle("Finance Tracker")
+            .navigationTitle(Text("finance_tracker"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    HStack(spacing: 12) {
-                        if AppStorageManager.shared.browserConfigURL != nil {
-                            Button {
-                                Haptics.impact(.light)
-                                onOpenBrowser?()
-                            } label: {
-                                Label("Web", systemImage: "globe")
-                                    .labelStyle(.iconOnly)
-                                    .font(.subheadline.weight(.semibold))
-                            }
-                            .accessibilityLabel("Open web version")
-                        }
-                        analyticsLink
-                    }
+                    analyticsLink
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
@@ -49,7 +35,7 @@ struct FinanceContainerView: View {
                     try viewModel.addTransaction(transaction)
                     toastStore?.show(
                         ToastMessage(
-                            text: "Transaction saved",
+                            text: String(localized: "transaction_saved"),
                             icon: "checkmark.circle.fill",
                             style: .success
                         ),
@@ -68,7 +54,7 @@ struct FinanceContainerView: View {
             }
         }
         .sheet(isPresented: $isShowingSettings) {
-            AppSettingsSheet(onOpenBrowser: onOpenBrowser)
+            AppSettingsSheet()
         }
         .onAppear {
             OrientationManager.shared.lockPortrait()
@@ -83,7 +69,7 @@ struct FinanceContainerView: View {
             Image(systemName: "gearshape")
                 .font(.subheadline.weight(.semibold))
         }
-        .accessibilityLabel("Settings")
+        .accessibilityLabel("settings")
     }
     
     private var fabButton: some View {
@@ -102,12 +88,12 @@ struct FinanceContainerView: View {
         }
         .padding(.trailing, 20)
         .padding(.bottom, 20)
-        .accessibilityLabel("Add transaction")
+        .accessibilityLabel("add_transaction")
     }
     
     private var currencyMenu: some View {
         Menu {
-            Picker("Currency", selection: Binding(
+            Picker("currency", selection: Binding(
                 get: { viewModel.selectedCurrencyCode },
                 set: { newValue in
                     let previousCode = viewModel.selectedCurrencyCode
@@ -116,7 +102,7 @@ struct FinanceContainerView: View {
                     Haptics.selection()
                     toastStore?.show(
                         ToastMessage(
-                            text: "Currency set to \(viewModel.selectedCurrencyCode)",
+                            text: String(format: String(localized: "currency_set_to"), viewModel.selectedCurrencyCode),
                             icon: "dollarsign.circle.fill",
                             style: .default
                         ),
@@ -144,7 +130,7 @@ struct FinanceContainerView: View {
 
     private var analyticsLink: some View {
         NavigationLink(destination: FinanceAnalyticsScreen(viewModel: viewModel)) {
-            Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
+            Label("analytics", systemImage: "chart.line.uptrend.xyaxis")
                 .labelStyle(.titleAndIcon)
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 10)
@@ -155,7 +141,7 @@ struct FinanceContainerView: View {
                 )
                 .appGlassSurface(cornerRadius: 999, style: .interactive)
         }
-        .accessibilityLabel("Open analytics")
+        .accessibilityLabel("analytics")
     }
 }
 
@@ -167,67 +153,80 @@ struct FinanceContainerView: View {
 private struct AppSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
-    @State private var selectedLanguageCode: String = AppStorageManager.shared.effectiveContentLanguageCode
-    var onOpenBrowser: (() -> Void)?
+    @AppStorage("selected_content_language_code") private var selectedLanguageCode = "en"
 
     var body: some View {
         NavigationView {
-            List {
-                Section("Appearance") {
-                    Picker("Theme", selection: $preferredColorSchemeRaw) {
-                        Text("System").tag("system")
-                        Text("Light").tag("light")
-                        Text("Dark").tag("dark")
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: preferredColorSchemeRaw) { newValue in
-                        AppearanceManager.apply(rawValue: newValue)
-                    }
-                }
-                if AppStorageManager.shared.browserConfigURL != nil, let openBrowser = onOpenBrowser {
-                    Section {
-                        Button {
-                            dismiss()
-                            openBrowser()
-                        } label: {
-                            Label("Open web version", systemImage: "globe")
-                        }
-                    }
-                }
-                Section("Language") {
-                    ForEach(ContentLanguageCatalog.supported) { option in
-                        Button {
-                            Haptics.selection()
-                            let code = ContentLanguageCatalog.normalizedCode(option.code)
-                            selectedLanguageCode = code
-                            AppStorageManager.shared.selectedContentLanguageCode = code
-                        } label: {
-                            HStack(spacing: 12) {
-                                Text(option.flag).font(.title3)
-                                Text(option.shortLabel).font(.title3.weight(.medium))
-                                Spacer()
-                                if selectedLanguageCode == option.code {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                }
-                            }
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
+            List { settingsContent }
             .listStyle(.insetGrouped)
-            .navigationTitle("Settings")
+            .navigationTitle(Text("settings"))
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
-                selectedLanguageCode = AppStorageManager.shared.effectiveContentLanguageCode
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Close") { dismiss() }
+            .toolbar { closeToolbarItem }
+        }
+    }
+
+    @ViewBuilder
+    private var settingsContent: some View {
+        appearanceSection
+        languageSection
+    }
+
+    private var appearanceSection: some View {
+        Section(header: Text("appearance")) {
+            Picker(selection: $preferredColorSchemeRaw) {
+                Text("theme_system").tag("system")
+                Text("theme_light").tag("light")
+                Text("theme_dark").tag("dark")
+            } label: {
+                Text("appearance")
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: preferredColorSchemeRaw) { newValue in
+                AppearanceManager.apply(rawValue: newValue)
+            }
+        }
+    }
+
+    private var languageSection: some View {
+        Section(header: Text("language")) {
+            ForEach(ContentLanguageCatalog.supported) { option in
+                languageRow(option)
+            }
+        }
+    }
+
+    private func languageRow(_ option: ContentLanguageOption) -> some View {
+        let code = ContentLanguageCatalog.normalizedCode(option.code)
+        let isSelected = selectedLanguageCode == code
+        return Button {
+            Haptics.selection()
+            selectedLanguageCode = code
+        } label: {
+            HStack(spacing: 12) {
+                Text(option.flag)
+                    .font(.title3)
+                Text(option.shortLabel)
+                    .font(.title3.weight(.medium))
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
                 }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var closeToolbarItem: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+                dismiss()
+            } label: {
+                Text("close")
             }
         }
     }

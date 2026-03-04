@@ -1,0 +1,80 @@
+/* App */
+"app_title" = "FinanceTracker";
+
+/* Finance */
+"finance_tracker" = "Maliyyə";
+"add_transaction" = "Əməliyyat əlavə et";
+"analytics" = "Analitika";
+"settings" = "Parametrlər";
+"open_web_version" = "Veb versiyanı aç";
+"web" = "Veb";
+
+/* Theme */
+"theme_system" = "Sistem";
+"theme_light" = "Açıq";
+"theme_dark" = "Qaranlıq";
+"appearance" = "Görünüş";
+
+/* Add Transaction Form */
+"add_transaction_title" = "Əməliyyat əlavə et";
+"unable_to_save" = "Saxlamaq mümkün olmadı";
+"please_try_again" = "Yenidən cəhd edin.";
+"type" = "Növ";
+"add_note_placeholder" = "Qeyd əlavə edin...";
+"currency_label" = "Valyuta: %@";
+"expense_breakdown" = "Xərc bölgüsü";
+"loading_chart" = "Qrafik yüklənir...";
+"total" = "Cəmi";
+"transactions" = "Əməliyyatlar";
+"retry" = "Yenidən";
+
+/* Add Transaction */
+"expense" = "Xərc";
+"income" = "Gəlir";
+"amount" = "Məbləğ";
+"currency" = "Valyuta";
+"category" = "Kateqoriya";
+"date" = "Tarix";
+"note_optional" = "Qeyd (isteğe bağlı)";
+"save" = "Saxla";
+"cancel" = "Ləğv et";
+
+/* Toasts */
+"transaction_saved" = "Əməliyyat saxlanıldı";
+"currency_set_to" = "Valyuta: %@";
+
+/* Date */
+"today" = "Bu gün";
+"yesterday" = "Dünən";
+
+/* Lists */
+"no_transactions" = "Əməliyyat hələ yoxdur";
+"tap_to_add" = "İlk əməliyyat üçün + basın";
+"loading_more" = "Yüklənir...";
+"no_expense_data" = "Xərc məlumatı hələ yoxdur";
+
+/* Settings */
+"close" = "Bağla";
+"ok" = "OK";
+"language" = "Dil";
+
+/* Analytics */
+"overview" = "Ümumi baxış";
+"average_income" = "Orta gəlir";
+"average_expense" = "Orta xərc";
+"operations" = "Əməliyyatlar";
+"savings_rate" = "Qənaət nisbəti";
+"daily_net_flow" = "Gündəlik balans";
+"top_expense_categories" = "Əsas xərc kateqoriyaları";
+
+/* Summary */
+"expenses" = "Xərclər";
+"balance" = "Balans";
+
+/* Onboarding */
+"skip" = "Keç";
+"next" = "Növbəti";
+"get_started" = "Başla";
+
+/* Browser */
+"loading" = "Yüklənir...";

@@ -28,9 +28,13 @@ struct BrowserScreen: View {
         .background(Color.black.ignoresSafeArea())
         .onAppear {
             OrientationManager.shared.unlockAll()
+            viewModel.syncWithSystemLanguage()
         }
         .onDisappear {
             OrientationManager.shared.lockPortrait()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
+            viewModel.syncWithSystemLanguage()
         }
         .onChange(of: viewModel.shouldFallbackToFinance) { shouldFallback in
             guard shouldFallback else { return }

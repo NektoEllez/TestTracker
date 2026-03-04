@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TransactionListView: View {
+    @Environment(\.locale) private var locale
     let groups: [TransactionGroup]
     let currencyCode: String
     let isLoadingNextPage: Bool
@@ -23,10 +24,10 @@ struct TransactionListView: View {
             Image(systemName: "tray")
                 .font(.system(size: 40))
                 .foregroundColor(.secondary.opacity(0.5))
-            Text("No transactions yet")
+            Text("no_transactions")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            Text("Tap + to add your first transaction")
+            Text("tap_to_add")
                 .font(.caption)
                 .foregroundColor(.secondary.opacity(0.7))
         }
@@ -47,7 +48,7 @@ struct TransactionListView: View {
                         .padding(.vertical, 4)
                     }
                 } header: {
-                    sectionHeader(group.sectionTitle)
+                    sectionHeader(sectionTitle(for: group.date))
                 }
                 .onAppear {
                     if group.id == groups.last?.id {
@@ -60,6 +61,16 @@ struct TransactionListView: View {
         }
     }
     
+    private func sectionTitle(for date: Date) -> String {
+        if date.isToday { return String(localized: "today", locale: locale) }
+        if date.isYesterday { return String(localized: "yesterday", locale: locale) }
+        var formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+
     private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title)
@@ -79,7 +90,7 @@ struct TransactionListView: View {
         if isLoadingNextPage {
             VStack(spacing: 8) {
                 DotArcLoaderView(size: 52, dotSize: 10)
-                Text("Loading more...")
+                Text("loading_more")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -92,7 +103,7 @@ struct TransactionListView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
-                Button("Retry", action: onRetryLoadMore)
+                Button("retry", action: onRetryLoadMore)
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
             }

@@ -59,7 +59,7 @@ struct FinanceScreen: View {
     private var chartSection: some View {
         if viewModel.isChartLoading || !viewModel.expenseByCategory.isEmpty {
             VStack(spacing: 12) {
-                sectionHeader("Expense Breakdown")
+                sectionHeader(String(localized: "expense_breakdown"))
                 
                 let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory)
                 chartContent(segments, isLoading: viewModel.isChartLoading)
@@ -74,7 +74,7 @@ struct FinanceScreen: View {
             
             Group {
                 if isLoading {
-                    LoadingIndicatorView(message: "Loading chart...")
+                    LoadingIndicatorView(message: String(localized: "loading_chart"))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 } else if isCompact {
                     VStack(spacing: 16) {
@@ -84,7 +84,7 @@ struct FinanceScreen: View {
                                 code: viewModel.selectedCurrencyCode,
                                 maximumFractionDigits: 0
                             ),
-                            centerSubtext: "Total",
+                            centerSubtext: String(localized: "total"),
                             isLoading: false
                         )
                         .frame(maxWidth: 300)
@@ -104,7 +104,7 @@ struct FinanceScreen: View {
                                 code: viewModel.selectedCurrencyCode,
                                 maximumFractionDigits: 0
                             ),
-                            centerSubtext: "Total",
+                            centerSubtext: String(localized: "total"),
                             isLoading: false
                         )
                         .frame(width: min(340, proxy.size.width * 0.5))
@@ -126,7 +126,7 @@ struct FinanceScreen: View {
     
     private var transactionsSection: some View {
         VStack(spacing: 8) {
-            sectionHeader("Transactions")
+            sectionHeader(String(localized: "transactions"))
             
             if let contentErrorMessage = viewModel.contentErrorMessage {
                 transactionsErrorState(message: contentErrorMessage)
@@ -170,7 +170,7 @@ struct FinanceScreen: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Retry") {
+            Button("retry") {
                 viewModel.retryLoadingContent()
             }
             .buttonStyle(.borderedProminent)

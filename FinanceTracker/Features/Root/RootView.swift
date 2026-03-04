@@ -15,7 +15,7 @@ struct RootView: View {
                     })
                     .transition(.opacity)
                 case .finance:
-                    FinanceContainerView(onOpenBrowser: { viewModel.openBrowser() })
+                    FinanceContainerView()
                         .transition(.opacity)
                 case .browser(let url):
                     BrowserScreen(

@@ -15,17 +15,17 @@ struct FinanceAnalyticsScreen: View {
             .padding(.bottom, 24)
         }
         .background(Color.appBackgroundGradient.ignoresSafeArea())
-        .navigationTitle("Analytics")
+        .navigationTitle("analytics")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var summarySection: some View {
         VStack(spacing: 12) {
-            sectionHeader("Overview")
+            sectionHeader(String(localized: "overview"))
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 12)], spacing: 12) {
                 analyticsCard(
-                    title: "Average income",
+                    title: String(localized: "average_income"),
                     value: averageAmount(for: .income).formattedCurrency(
                         code: viewModel.selectedCurrencyCode,
                         maximumFractionDigits: 0
@@ -34,7 +34,7 @@ struct FinanceAnalyticsScreen: View {
                     tint: .appGreen
                 )
                 analyticsCard(
-                    title: "Average expense",
+                    title: String(localized: "average_expense"),
                     value: averageAmount(for: .expense).formattedCurrency(
                         code: viewModel.selectedCurrencyCode,
                         maximumFractionDigits: 0
@@ -43,13 +43,13 @@ struct FinanceAnalyticsScreen: View {
                     tint: .appRed
                 )
                 analyticsCard(
-                    title: "Operations",
+                    title: String(localized: "operations"),
                     value: "\(viewModel.transactions.count)",
                     icon: "list.bullet.rectangle",
                     tint: .appBlue
                 )
                 analyticsCard(
-                    title: "Savings rate",
+                    title: String(localized: "savings_rate"),
                     value: String(format: "%.1f%%", savingsRate * 100),
                     icon: "chart.line.uptrend.xyaxis.circle.fill",
                     tint: .appAccent
@@ -60,7 +60,7 @@ struct FinanceAnalyticsScreen: View {
 
     private var dailyFlowSection: some View {
         VStack(spacing: 12) {
-            sectionHeader("Daily net flow")
+            sectionHeader(String(localized: "daily_net_flow"))
 
             VStack(spacing: 10) {
                 ForEach(recentFlows) { flow in
@@ -74,12 +74,12 @@ struct FinanceAnalyticsScreen: View {
 
     private var categoriesSection: some View {
         VStack(spacing: 12) {
-            sectionHeader("Top expense categories")
+            sectionHeader(String(localized: "top_expense_categories"))
 
             let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory)
 
             if segments.isEmpty {
-                Text("No expense data yet")
+                Text("no_expense_data")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)

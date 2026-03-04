@@ -1,0 +1,80 @@
+/* App */
+"app_title" = "FinanceTracker";
+
+/* Finance */
+"finance_tracker" = "Финансы";
+"add_transaction" = "Добавить операцию";
+"analytics" = "Аналитика";
+"settings" = "Настройки";
+"open_web_version" = "Открыть веб-версию";
+"web" = "Веб";
+
+/* Theme */
+"theme_system" = "Системная";
+"theme_light" = "Светлая";
+"theme_dark" = "Тёмная";
+"appearance" = "Оформление";
+
+/* Add Transaction Form */
+"add_transaction_title" = "Добавить операцию";
+"unable_to_save" = "Не удалось сохранить";
+"please_try_again" = "Попробуйте ещё раз.";
+"type" = "Тип";
+"add_note_placeholder" = "Добавьте заметку...";
+"currency_label" = "Валюта: %@";
+"expense_breakdown" = "Структура расходов";
+"loading_chart" = "Загрузка графика...";
+"total" = "Итого";
+"transactions" = "Операции";
+"retry" = "Повторить";
+
+/* Add Transaction */
+"expense" = "Расход";
+"income" = "Доход";
+"amount" = "Сумма";
+"currency" = "Валюта";
+"category" = "Категория";
+"date" = "Дата";
+"note_optional" = "Заметка (необязательно)";
+"save" = "Сохранить";
+"cancel" = "Отмена";
+
+/* Toasts */
+"transaction_saved" = "Операция сохранена";
+"currency_set_to" = "Валюта: %@";
+
+/* Date */
+"today" = "Сегодня";
+"yesterday" = "Вчера";
+
+/* Lists */
+"no_transactions" = "Операций пока нет";
+"tap_to_add" = "Нажмите + для первой операции";
+"loading_more" = "Загрузка...";
+"no_expense_data" = "Данных о расходах пока нет";
+
+/* Settings */
+"close" = "Закрыть";
+"ok" = "OK";
+"language" = "Язык";
+
+/* Analytics */
+"overview" = "Обзор";
+"average_income" = "Средний доход";
+"average_expense" = "Средний расход";
+"operations" = "Операции";
+"savings_rate" = "Норма сбережений";
+"daily_net_flow" = "Дневной баланс";
+"top_expense_categories" = "Топ категорий расходов";
+
+/* Summary */
+"expenses" = "Расходы";
+"balance" = "Баланс";
+
+/* Onboarding */
+"skip" = "Пропустить";
+"next" = "Далее";
+"get_started" = "Начать";
+
+/* Browser */
+"loading" = "Загрузка...";

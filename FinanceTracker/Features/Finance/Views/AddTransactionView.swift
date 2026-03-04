@@ -24,26 +24,26 @@ struct AddTransactionView: View {
                 dateSection
                 noteSection
             }
-            .navigationTitle("Add Transaction")
+            .navigationTitle("add_transaction_title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismissForm() }
+                    Button("cancel") { dismissForm() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { saveTransaction() }
+                    Button("save") { saveTransaction() }
                         .font(.body.weight(.semibold))
                         .disabled(!viewModel.isValid)
                 }
             }
         }
-        .alert("Unable to Save", isPresented: Binding(
+        .alert("unable_to_save", isPresented: Binding(
             get: { saveErrorMessage != nil },
             set: { if !$0 { saveErrorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) { saveErrorMessage = nil }
+            Button("ok", role: .cancel) { saveErrorMessage = nil }
         } message: {
-            Text(saveErrorMessage ?? "Please try again.")
+            Text(saveErrorMessage ?? String(localized: "please_try_again"))
         }
     }
     
@@ -51,9 +51,9 @@ struct AddTransactionView: View {
     
     private var typeSection: some View {
         Section {
-            Picker("Type", selection: $viewModel.selectedType) {
-                Text("Expense").tag(TransactionType.expense)
-                Text("Income").tag(TransactionType.income)
+            Picker("type", selection: $viewModel.selectedType) {
+                Text("expense").tag(TransactionType.expense)
+                Text("income").tag(TransactionType.income)
             }
             .pickerStyle(SegmentedPickerStyle())
             .onChange(of: viewModel.selectedType) { _ in
@@ -64,7 +64,7 @@ struct AddTransactionView: View {
     }
     
     private var amountSection: some View {
-        Section(header: Text("Amount")) {
+        Section(header: Text("amount")) {
             TextField("0.00", text: amountInputBinding)
                 .keyboardType(.decimalPad)
                 .textInputAutocapitalization(.never)
@@ -72,7 +72,7 @@ struct AddTransactionView: View {
                 .font(.title2)
                 .focused($focusedField, equals: .amount)
             
-            Text("Currency: \(viewModel.selectedCurrencyCode)")
+            Text(String(format: String(localized: "currency_label"), viewModel.selectedCurrencyCode))
                 .font(.caption)
                 .foregroundColor(.secondary)
             
@@ -94,8 +94,8 @@ struct AddTransactionView: View {
     }
     
     private var currencySection: some View {
-        Section(header: Text("Currency")) {
-            Picker("Currency", selection: $viewModel.selectedCurrencyCode) {
+        Section(header: Text("currency")) {
+            Picker("currency", selection: $viewModel.selectedCurrencyCode) {
                 ForEach(CurrencyCatalog.popular) { option in
                     Text(option.title).tag(option.code)
                 }
@@ -109,7 +109,7 @@ struct AddTransactionView: View {
     }
     
     private var categorySection: some View {
-        Section(header: Text("Category")) {
+        Section(header: Text("category")) {
             LazyVGrid(columns: [
                 GridItem(.adaptive(minimum: 80))
             ], spacing: 12) {
@@ -146,15 +146,15 @@ struct AddTransactionView: View {
     }
     
     private var dateSection: some View {
-        Section(header: Text("Date")) {
-            DatePicker("Date", selection: $viewModel.date, displayedComponents: .date)
+        Section(header: Text("date")) {
+            DatePicker("date", selection: $viewModel.date, displayedComponents: .date)
                 .datePickerStyle(CompactDatePickerStyle())
         }
     }
     
     private var noteSection: some View {
-        Section(header: Text("Note (optional)")) {
-            TextField("Add a note...", text: $viewModel.note)
+        Section(header: Text("note_optional")) {
+            TextField("add_note_placeholder", text: $viewModel.note)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled(true)
                 .focused($focusedField, equals: .note)

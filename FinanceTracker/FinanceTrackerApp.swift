@@ -5,10 +5,12 @@ struct FinanceTrackerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var toastStore = ToastStore()
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
+    @AppStorage("selected_content_language_code") private var selectedLanguageCode = "en"
     
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(\.locale, Locale(identifier: selectedLanguageCode))
                 .environment(\.toastStore, toastStore)
                 .toastOverlay(alignment: .top)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -1,0 +1,99 @@
+/* App */
+"app_title" = "FinanceTracker";
+
+/* Finance */
+"finance_tracker" = "Finance Tracker";
+"add_transaction" = "Add transaction";
+"analytics" = "Analytics";
+"settings" = "Settings";
+"open_web_version" = "Open web version";
+"web" = "Web";
+
+/* Theme */
+"theme_system" = "System";
+"theme_light" = "Light";
+"theme_dark" = "Dark";
+"appearance" = "Appearance";
+
+/* Add Transaction Form */
+"add_transaction_title" = "Add Transaction";
+"unable_to_save" = "Unable to Save";
+"please_try_again" = "Please try again.";
+"type" = "Type";
+"add_note_placeholder" = "Add a note...";
+"currency_label" = "Currency: %@";
+"expense_breakdown" = "Expense Breakdown";
+"loading_chart" = "Loading chart...";
+"total" = "Total";
+"transactions" = "Transactions";
+"retry" = "Retry";
+
+/* Add Transaction */
+"expense" = "Expense";
+"income" = "Income";
+"amount" = "Amount";
+"currency" = "Currency";
+"category" = "Category";
+"date" = "Date";
+"note_optional" = "Note (optional)";
+"save" = "Save";
+"cancel" = "Cancel";
+
+/* Toasts */
+"transaction_saved" = "Transaction saved";
+"currency_set_to" = "Currency set to %@";
+
+/* Date */
+"today" = "Today";
+"yesterday" = "Yesterday";
+
+/* Lists */
+"no_transactions" = "No transactions yet";
+"tap_to_add" = "Tap + to add your first transaction";
+"loading_more" = "Loading more...";
+"no_expense_data" = "No expense data yet";
+
+/* Settings */
+"close" = "Close";
+"ok" = "OK";
+"language" = "Language";
+
+/* Analytics */
+"overview" = "Overview";
+"average_income" = "Average income";
+"average_expense" = "Average expense";
+"operations" = "Operations";
+"savings_rate" = "Savings rate";
+"daily_net_flow" = "Daily net flow";
+"top_expense_categories" = "Top expense categories";
+
+/* Summary */
+"income" = "Income";
+"expenses" = "Expenses";
+"balance" = "Balance";
+
+/* Onboarding */
+"skip" = "Skip";
+"next" = "Next";
+"get_started" = "Get Started";
+
+/* Analytics */
+"overview" = "Overview";
+"average_income" = "Average income";
+"average_expense" = "Average expense";
+"operations" = "Operations";
+"savings_rate" = "Savings rate";
+"daily_net_flow" = "Daily net flow";
+"top_expense_categories" = "Top expense categories";
+
+/* Summary */
+"expenses" = "Expenses";
+"balance" = "Balance";
+
+/* Onboarding */
+"skip" = "Skip";
+"next" = "Next";
+"get_started" = "Get Started";
+
+/* Browser */
+"loading" = "Loading...";

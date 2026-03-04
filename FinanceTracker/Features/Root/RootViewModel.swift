@@ -11,7 +11,7 @@ enum AppState: Equatable, Sendable {
 @MainActor
 class RootViewModel: ObservableObject {
     @Published var appState: AppState = .splash
-    
+
     private let configService: ConfigServiceProtocol
     private let storageManager: AppStorageManager
     
@@ -46,32 +46,19 @@ class RootViewModel: ObservableObject {
             }
         }
         
-        // Race: fetch config vs 6s timeout. No internet / no URL / timeout → finance.
-        let service = configService
-        let url: URL? = await withTaskGroup(of: URL?.self) { group in
-            group.addTask {
-                do {
-                    return try await service.fetchConfig()
-                } catch {
-                    return nil
-                }
+        do {
+            if let url = try await configService.fetchConfig() {
+                ModuleDecision.browser(url).save()
+                OrientationManager.shared.unlockAll()
+                return .browser(url)
+            } else {
+                ModuleDecision.finance.save()
+                return module1State()
             }
-            group.addTask {
-                try? await Task.sleep(nanoseconds: 6_000_000_000)
-                return nil as URL?
-            }
-            let first = await group.next() ?? nil
-            group.cancelAll()
-            return first ?? nil
+        } catch {
+            ModuleDecision.finance.save()
+            return module1State()
         }
-
-        if let url {
-            ModuleDecision.browser(url).save()
-            OrientationManager.shared.unlockAll()
-            return .browser(url)
-        }
-        ModuleDecision.finance.save()
-        return module1State()
     }
     
     func completeOnboarding() {
@@ -85,12 +72,6 @@ class RootViewModel: ObservableObject {
         appState = module1State()
     }
 
-    func openBrowser() {
-        guard let url = storageManager.browserConfigURL else { return }
-        OrientationManager.shared.unlockAll()
-        appState = .browser(url)
-    }
-    
     private func module1State() -> AppState {
         if !storageManager.isOnboardingCompleted {
             return .onboarding

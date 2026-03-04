@@ -1,0 +1,80 @@
+/* App */
+"app_title" = "FinanceTracker";
+
+/* Finance */
+"finance_tracker" = "Finanzas";
+"add_transaction" = "Añadir transacción";
+"analytics" = "Análisis";
+"settings" = "Ajustes";
+"open_web_version" = "Abrir versión web";
+"web" = "Web";
+
+/* Theme */
+"theme_system" = "Sistema";
+"theme_light" = "Claro";
+"theme_dark" = "Oscuro";
+"appearance" = "Apariencia";
+
+/* Add Transaction Form */
+"add_transaction_title" = "Añadir transacción";
+"unable_to_save" = "No se pudo guardar";
+"please_try_again" = "Inténtelo de nuevo.";
+"type" = "Tipo";
+"add_note_placeholder" = "Añadir una nota...";
+"currency_label" = "Moneda: %@";
+"expense_breakdown" = "Desglose de gastos";
+"loading_chart" = "Cargando gráfico...";
+"total" = "Total";
+"transactions" = "Transacciones";
+"retry" = "Reintentar";
+
+/* Add Transaction */
+"expense" = "Gasto";
+"income" = "Ingreso";
+"amount" = "Cantidad";
+"currency" = "Moneda";
+"category" = "Categoría";
+"date" = "Fecha";
+"note_optional" = "Nota (opcional)";
+"save" = "Guardar";
+"cancel" = "Cancelar";
+
+/* Toasts */
+"transaction_saved" = "Transacción guardada";
+"currency_set_to" = "Moneda establecida en %@";
+
+/* Date */
+"today" = "Hoy";
+"yesterday" = "Ayer";
+
+/* Lists */
+"no_transactions" = "Aún no hay transacciones";
+"tap_to_add" = "Pulse + para la primera transacción";
+"loading_more" = "Cargando...";
+"no_expense_data" = "Aún no hay datos de gastos";
+
+/* Settings */
+"close" = "Cerrar";
+"ok" = "OK";
+"language" = "Idioma";
+
+/* Analytics */
+"overview" = "Resumen";
+"average_income" = "Ingreso medio";
+"average_expense" = "Gasto medio";
+"operations" = "Operaciones";
+"savings_rate" = "Tasa de ahorro";
+"daily_net_flow" = "Flujo neto diario";
+"top_expense_categories" = "Principales categorías de gastos";
+
+/* Summary */
+"expenses" = "Gastos";
+"balance" = "Saldo";
+
+/* Onboarding */
+"skip" = "Omitir";
+"next" = "Siguiente";
+"get_started" = "Comenzar";
+
+/* Browser */
+"loading" = "Cargando...";

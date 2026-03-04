@@ -37,7 +37,7 @@ struct OnboardingView: View {
     }
     
     private var skipButton: some View {
-        Button("Skip") {
+        Button("skip") {
             onComplete()
         }
         .font(.body)
@@ -47,7 +47,7 @@ struct OnboardingView: View {
     @ViewBuilder
     private var nextButton: some View {
         if currentPage < pages.count - 1 {
-            Button("Next") {
+            Button("next") {
                 withAnimation {
                     currentPage += 1
                 }
@@ -55,7 +55,7 @@ struct OnboardingView: View {
             .font(.body.weight(.semibold))
             .foregroundColor(.appAccent)
         } else {
-            Button("Get Started") {
+            Button("get_started") {
                 onComplete()
             }
             .font(.body.weight(.semibold))

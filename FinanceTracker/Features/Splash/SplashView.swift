@@ -39,7 +39,7 @@ struct SplashView: View {
     }
     
     private var titleView: some View {
-        Text("FinanceTracker")
+        Text("app_title")
             .font(.largeTitle)
             .fontWeight(.bold)
             .foregroundColor(.white)

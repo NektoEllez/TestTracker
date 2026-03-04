@@ -3,40 +3,30 @@ import os
 
 final class ConfigService: ConfigServiceProtocol, Sendable {
     private enum Constants {
-        static let infoPlistConfigURLKey = "ConfigURL"
-        /// JSON config source (per spec). Website URL is extracted from JSON, not stored here.
-        static let defaultJSONURL = URL(string: "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU")
-        static let timeout: TimeInterval = 5
+        static let configURL = URL(string: "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU")
+        static let timeout: TimeInterval = 12
         static let isRemoteConfigEnabled = true
     }
     
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "ConfigService")
     
-    private let configURL: URL?
     let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
-    var hasRemoteConfig: Bool { configURL != nil }
+    var hasRemoteConfig: Bool { Constants.configURL != nil }
     
     init(bundle: Bundle = .main) {
-        let raw = bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String
-        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmed, !trimmed.isEmpty, let url = URL(string: trimmed) {
-            self.configURL = url
-        } else {
-            self.configURL = Constants.defaultJSONURL
-        }
+        _ = bundle
     }
     
     func fetchConfig() async throws -> URL? {
-        guard let configURL else {
-            Self.logger.error("Config URL is missing or invalid, using local module fallback")
-            return nil
+        guard let configURL = Constants.configURL else {
+            throw ConfigServiceError.unknown("Config URL is unavailable")
         }
 
-        var request = URLRequest(url: configURL)
-        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        request.timeoutInterval = Constants.timeout
-        
         do {
+            var request = URLRequest(url: configURL)
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            request.timeoutInterval = Constants.timeout
+
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {

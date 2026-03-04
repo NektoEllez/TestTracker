@@ -95,5 +95,19 @@
 "next" = "Next";
 "get_started" = "Get Started";
 
+/* Categories */
+"category_salary" = "Salary";
+"category_freelance" = "Freelance";
+"category_investments" = "Investments";
+"category_gifts" = "Gifts";
+"category_food" = "Food";
+"category_transport" = "Transport";
+"category_housing" = "Housing";
+"category_entertainment" = "Entertainment";
+"category_health" = "Health";
+"category_shopping" = "Shopping";
+"category_education" = "Education";
+"category_other" = "Other";
+
 /* Browser */
 "loading" = "Loading...";

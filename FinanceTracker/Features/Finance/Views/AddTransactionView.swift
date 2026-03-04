@@ -3,6 +3,7 @@ import UIKit
 
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @StateObject private var viewModel = AddTransactionViewModel()
     @State private var saveErrorMessage: String?
     @FocusState private var focusedField: InputField?
@@ -131,7 +132,7 @@ struct AddTransactionView: View {
                 .background(isSelected ? category.color : category.color.opacity(0.15))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             
-            Text(category.displayName)
+            Text(Bundle.main.localizedString(for: category.localizationKey, locale: locale))
                 .font(.caption2)
                 .foregroundColor(isSelected ? .primary : .secondary)
                 .lineLimit(1)
@@ -141,7 +142,7 @@ struct AddTransactionView: View {
             viewModel.selectedCategory = category
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(category.displayName)
+        .accessibilityLabel(Bundle.main.localizedString(for: category.localizationKey, locale: locale))
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
     

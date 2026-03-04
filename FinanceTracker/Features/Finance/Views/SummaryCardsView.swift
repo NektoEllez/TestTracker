@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SummaryCardsView: View {
+    @Environment(\.locale) private var locale
     let income: Decimal
     let expenses: Decimal
     let balance: Decimal
@@ -8,15 +9,15 @@ struct SummaryCardsView: View {
     
     private var metrics: [SummaryMetric] {
         [
-            SummaryMetric(titleKey: "income", amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
-            SummaryMetric(titleKey: "expenses", amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
-            SummaryMetric(titleKey: "balance", amount: balance, color: .appBlue, icon: "equal.circle.fill")
+            SummaryMetric(title: Bundle.main.localizedString(for: "income", locale: locale), amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
+            SummaryMetric(title: Bundle.main.localizedString(for: "expenses", locale: locale), amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
+            SummaryMetric(title: Bundle.main.localizedString(for: "balance", locale: locale), amount: balance, color: .appBlue, icon: "equal.circle.fill")
         ]
     }
     
     var body: some View {
         if #available(iOS 26, *) {
-            GlassEffectContainer(spacing: 12) {
+            ModernSummaryCardsContainer(spacing: 12) {
                 cardsContent
             }
         } else {
@@ -41,7 +42,7 @@ struct SummaryCardsView: View {
                 .font(.title3)
                 .foregroundColor(metric.color)
             
-            Text(metric.titleKey)
+            Text(metric.title)
                 .font(.caption)
                 .foregroundColor(.secondary)
             
@@ -62,8 +63,25 @@ struct SummaryCardsView: View {
     }
 }
 
+@available(iOS 26, *)
+private struct ModernSummaryCardsContainer<Content: View>: View {
+    let spacing: CGFloat
+    let content: Content
+
+    init(spacing: CGFloat, @ViewBuilder content: () -> Content) {
+        self.spacing = spacing
+        self.content = content()
+    }
+
+    var body: some View {
+        GlassEffectContainer(spacing: spacing) {
+            content
+        }
+    }
+}
+
 private struct SummaryMetric: Identifiable {
-    let titleKey: LocalizedStringKey
+    let title: String
     let amount: Decimal
     let color: Color
     let icon: String

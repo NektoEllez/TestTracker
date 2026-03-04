@@ -27,22 +27,8 @@ enum TransactionCategory: String, Codable, CaseIterable, Identifiable {
         }
     }
     
-    var displayName: String {
-        switch self {
-            case .salary: return "Salary"
-            case .freelance: return "Freelance"
-            case .investments: return "Investments"
-            case .gifts: return "Gifts"
-            case .food: return "Food"
-            case .transport: return "Transport"
-            case .housing: return "Housing"
-            case .entertainment: return "Entertainment"
-            case .health: return "Health"
-            case .shopping: return "Shopping"
-            case .education: return "Education"
-            case .other: return "Other"
-        }
-    }
+    /// Localization key for the category name (e.g. "category_food").
+    var localizationKey: String { "category_\(rawValue)" }
     
     var icon: String {
         switch self {

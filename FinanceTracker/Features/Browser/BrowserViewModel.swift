@@ -4,11 +4,6 @@ import WebKit
 
 @MainActor
 class BrowserViewModel: ObservableObject {
-    struct SafariDestination: Identifiable, Equatable {
-        let url: URL
-        var id: String { url.absoluteString }
-    }
-    
     @Published var currentURL: URL
     @Published var isLoading: Bool = true
     @Published var estimatedProgress: Double = 0
@@ -16,7 +11,6 @@ class BrowserViewModel: ObservableObject {
     @Published var canGoForward: Bool = false
     @Published var errorMessage: String?
     @Published var shouldFallbackToFinance: Bool = false
-    @Published var safariDestination: SafariDestination?
     @Published var selectedLanguageCode: String
     
     let initialURL: URL

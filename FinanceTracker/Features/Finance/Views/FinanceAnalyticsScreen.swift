@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FinanceAnalyticsScreen: View {
     @ObservedObject var viewModel: FinanceViewModel
+    @Environment(\.locale) private var locale
 
     var body: some View {
         ScrollView {
@@ -76,7 +77,7 @@ struct FinanceAnalyticsScreen: View {
         VStack(spacing: 12) {
             sectionHeader(String(localized: "top_expense_categories"))
 
-            let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory)
+            let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory, locale: locale)
 
             if segments.isEmpty {
                 Text("no_expense_data")
@@ -172,7 +173,7 @@ struct FinanceAnalyticsScreen: View {
                 .fill(segment.color)
                 .frame(width: 10, height: 10)
 
-            Text(segment.label)
+            Text(Bundle.main.localizedString(for: segment.category.localizationKey, locale: locale))
                 .font(.subheadline)
                 .foregroundColor(.primary)
                 .lineLimit(1)

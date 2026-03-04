@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TransactionRowView: View {
+    @Environment(\.locale) private var locale
     let transaction: Transaction
     let currencyCode: String
     
@@ -25,7 +26,7 @@ struct TransactionRowView: View {
     
     private var transactionDetails: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(transaction.category.displayName)
+            Text(Bundle.main.localizedString(for: transaction.category.localizationKey, locale: locale))
                 .font(.subheadline)
                 .fontWeight(.medium)
             

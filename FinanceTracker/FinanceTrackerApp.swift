@@ -11,6 +11,7 @@ struct FinanceTrackerApp: App {
         WindowGroup {
             RootView()
                 .environment(\.locale, Locale(identifier: selectedLanguageCode))
+                .id(selectedLanguageCode)
                 .environment(\.toastStore, toastStore)
                 .toastOverlay(alignment: .top)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

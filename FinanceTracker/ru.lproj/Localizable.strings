@@ -2,7 +2,7 @@
 "app_title" = "FinanceTracker";
 
 /* Finance */
-"finance_tracker" = "Финансы";
+"finance_tracker" = "Трекер финансов";
 "add_transaction" = "Добавить операцию";
 "analytics" = "Аналитика";
 "settings" = "Настройки";
@@ -75,6 +75,20 @@
 "skip" = "Пропустить";
 "next" = "Далее";
 "get_started" = "Начать";
+
+/* Categories */
+"category_salary" = "Зарплата";
+"category_freelance" = "Фриланс";
+"category_investments" = "Инвестиции";
+"category_gifts" = "Подарки";
+"category_food" = "Еда";
+"category_transport" = "Транспорт";
+"category_housing" = "Жильё";
+"category_entertainment" = "Развлечения";
+"category_health" = "Здоровье";
+"category_shopping" = "Покупки";
+"category_education" = "Образование";
+"category_other" = "Другое";
 
 /* Browser */
 "loading" = "Загрузка...";

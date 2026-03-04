@@ -76,5 +76,19 @@
 "next" = "Növbəti";
 "get_started" = "Başla";
 
+/* Categories */
+"category_salary" = "Maaş";
+"category_freelance" = "Freelance";
+"category_investments" = "İnvestisiya";
+"category_gifts" = "Hədiyyələr";
+"category_food" = "Yemək";
+"category_transport" = "Nəqliyyat";
+"category_housing" = "Yaşayış";
+"category_entertainment" = "Əyləncə";
+"category_health" = "Sağlamlıq";
+"category_shopping" = "Alış-veriş";
+"category_education" = "Təhsil";
+"category_other" = "Digər";
+
 /* Browser */
 "loading" = "Yüklənir...";

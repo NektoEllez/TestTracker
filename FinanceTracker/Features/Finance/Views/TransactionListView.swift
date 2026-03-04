@@ -62,8 +62,8 @@ struct TransactionListView: View {
     }
     
     private func sectionTitle(for date: Date) -> String {
-        if date.isToday { return String(localized: "today", locale: locale) }
-        if date.isYesterday { return String(localized: "yesterday", locale: locale) }
+        if date.isToday { return Bundle.main.localizedString(for: "today", locale: locale) }
+        if date.isYesterday { return Bundle.main.localizedString(for: "yesterday", locale: locale) }
         var formatter = DateFormatter()
         formatter.locale = locale
         formatter.dateStyle = .medium

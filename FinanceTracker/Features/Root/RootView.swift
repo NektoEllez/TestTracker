@@ -29,9 +29,12 @@ struct RootView: View {
         .background(Color.appBackgroundGradient.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.4), value: viewModel.appState)
         .task {
-            async let initialState = viewModel.determineModule()
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            viewModel.appState = await initialState
+            let initialState = await viewModel.determineModule()
+            let hasSavedDecision = ModuleDecision.load() != nil
+            if !hasSavedDecision {
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+            }
+            viewModel.appState = initialState
         }
     }
 }

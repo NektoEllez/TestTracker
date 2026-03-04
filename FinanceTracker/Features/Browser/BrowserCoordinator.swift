@@ -100,19 +100,6 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        if let url = navigationAction.request.url,
-           shouldOpenInSafari(
-            url: url,
-            navigationType: navigationAction.navigationType,
-            isMainFrame: navigationAction.targetFrame?.isMainFrame ?? false
-           ) {
-            publish { model in
-                model.safariDestination = BrowserViewModel.SafariDestination(url: url)
-            }
-            decisionHandler(.cancel)
-            return
-        }
-        
         decisionHandler(.allow)
     }
     
@@ -125,17 +112,7 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
         if let url = navigationAction.request.url {
-            if shouldOpenInSafari(
-                url: url,
-                navigationType: navigationAction.navigationType,
-                isMainFrame: false
-            ) {
-                publish { model in
-                    model.safariDestination = BrowserViewModel.SafariDestination(url: url)
-                }
-            } else {
-                browser.load(URLRequest(url: url))
-            }
+            browser.load(URLRequest(url: url))
         }
         return nil
     }
@@ -198,32 +175,6 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         update(viewModel)
     }
     
-    private func shouldOpenInSafari(
-        url: URL,
-        navigationType: WKNavigationType,
-        isMainFrame: Bool
-    ) -> Bool {
-        guard let scheme = url.scheme?.lowercased(),
-              scheme == "http" || scheme == "https" else {
-            return false
-        }
-        guard let targetHost = url.host?.lowercased(),
-              let initialHost = viewModel.initialURL.host?.lowercased() else {
-            return false
-        }
-        guard !isSameHostOrSubdomain(targetHost, of: initialHost) else {
-            return false
-        }
-        
-        // External top-level links open in SFSafariViewController.
-        // Redirect chains and non-main-frame navigations stay in WKWebView (system API) to preserve auth/session flows.
-        return navigationType == .linkActivated || !isMainFrame
-    }
-    
-    private func isSameHostOrSubdomain(_ host: String, of baseHost: String) -> Bool {
-        host == baseHost || host.hasSuffix("." + baseHost)
-    }
-
     private func checkForAccessRestrictedPage(in browser: WKWebView) {
         let script = "document.body?.innerText?.toLowerCase() ?? ''"
         browser.evaluateJavaScript(script) { [weak self] result, _ in

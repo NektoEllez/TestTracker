@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ChartLegendView: View {
+    @Environment(\.locale) private var locale
     let segments: [ChartSegment]
     let currencyCode: String
     
@@ -18,7 +19,7 @@ struct ChartLegendView: View {
                 .fill(segment.color)
                 .frame(width: 10, height: 10)
             
-            Text(segment.label)
+            Text(Bundle.main.localizedString(for: segment.category.localizationKey, locale: locale))
                 .font(.subheadline)
                 .foregroundColor(.primary)
                 .lineLimit(2)

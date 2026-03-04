@@ -4,6 +4,7 @@ struct BrowserScreen: View {
     @StateObject private var viewModel: BrowserViewModel
     @Environment(\.toastStore) private var toastStore
     @State private var isShowingLanguageSheet = false
+    @State private var didTriggerFallback = false
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
     private let isSettingsOverlayEnabled = false
     
@@ -39,13 +40,13 @@ struct BrowserScreen: View {
         .onChange(of: viewModel.shouldFallbackToFinance) { shouldFallback in
             guard shouldFallback else { return }
             viewModel.shouldFallbackToFinance = false
-            onFallbackToFinance?()
+            fallbackToFinanceIfNeeded()
         }
         .task(id: viewModel.isLoading) {
             guard viewModel.isLoading else { return }
             try? await Task.sleep(nanoseconds: 15_000_000_000)
             if viewModel.isLoading {
-                viewModel.shouldFallbackToFinance = true
+                fallbackToFinanceIfNeeded()
             }
         }
         .onChange(of: viewModel.errorMessage) { newValue in
@@ -59,11 +60,6 @@ struct BrowserScreen: View {
                 autoDismissAfter: 3
             )
             viewModel.errorMessage = nil
-        }
-        .sheet(item: $viewModel.safariDestination, onDismiss: {
-            viewModel.safariDestination = nil
-        }) { destination in
-            SafariBrowserRepresentable(url: destination.url)
         }
         .sheet(isPresented: Binding(
             get: { isSettingsOverlayEnabled && isShowingLanguageSheet },
@@ -80,6 +76,13 @@ struct BrowserScreen: View {
             .preferredColorScheme(mappedColorScheme)
         }
         .preferredColorScheme(mappedColorScheme)
+    }
+
+    private func fallbackToFinanceIfNeeded() {
+        guard !didTriggerFallback else { return }
+        didTriggerFallback = true
+        viewModel.isLoading = false
+        onFallbackToFinance?()
     }
     
     private var settingsToolbar: some View {

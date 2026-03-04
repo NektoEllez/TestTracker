@@ -76,5 +76,19 @@
 "next" = "Siguiente";
 "get_started" = "Comenzar";
 
+/* Categories */
+"category_salary" = "Salario";
+"category_freelance" = "Freelance";
+"category_investments" = "Inversiones";
+"category_gifts" = "Regalos";
+"category_food" = "Comida";
+"category_transport" = "Transporte";
+"category_housing" = "Vivienda";
+"category_entertainment" = "Entretenimiento";
+"category_health" = "Salud";
+"category_shopping" = "Compras";
+"category_education" = "Educación";
+"category_other" = "Otro";
+
 /* Browser */
 "loading" = "Cargando...";

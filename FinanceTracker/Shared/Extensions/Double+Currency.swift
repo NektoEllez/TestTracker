@@ -1,28 +1,32 @@
 import Foundation
 
+@MainActor
 private enum CurrencyFormatting {
+    private static var cache: [String: NumberFormatter] = [:]
+
     static func formatter(code: String, maximumFractionDigits: Int) -> NumberFormatter {
         let safeDigits = max(0, maximumFractionDigits)
         let uppercasedCode = code.uppercased()
         let key = "FinanceTracker.CurrencyFormatter.\(uppercasedCode).\(safeDigits)"
-        
-        if let cached = Thread.current.threadDictionary[key] as? NumberFormatter {
+
+        if let cached = cache[key] {
             return cached
         }
-        
+
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = uppercasedCode
         formatter.locale = .current
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = safeDigits
-        
-        Thread.current.threadDictionary[key] = formatter
+
+        cache[key] = formatter
         return formatter
     }
 }
 
 extension Decimal {
+    @MainActor
     func formattedCurrency(code: String = "USD", maximumFractionDigits: Int) -> String {
         let formatter = CurrencyFormatting.formatter(
             code: code,
@@ -37,6 +41,7 @@ extension Decimal {
 }
 
 extension Double {
+    @MainActor
     func formattedCurrency(code: String = "USD", maximumFractionDigits: Int) -> String {
         let formatter = CurrencyFormatting.formatter(
             code: code,

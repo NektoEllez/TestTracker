@@ -3,6 +3,7 @@ import SwiftUI
 struct FinanceScreen: View {
     @ObservedObject var viewModel: FinanceViewModel
     @Environment(\.toastStore) private var toastStore
+    @Environment(\.locale) private var locale
     
     var body: some View {
         DotRefreshScrollView(onRefresh: {
@@ -59,7 +60,7 @@ struct FinanceScreen: View {
     private var chartSection: some View {
         if viewModel.isChartLoading || !viewModel.expenseByCategory.isEmpty {
             VStack(spacing: 12) {
-                sectionHeader(String(localized: "expense_breakdown"))
+                sectionHeader(String(localized: "expense_breakdown", locale: locale))
                 
                 let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory)
                 chartContent(segments, isLoading: viewModel.isChartLoading)
@@ -74,7 +75,7 @@ struct FinanceScreen: View {
             
             Group {
                 if isLoading {
-                    LoadingIndicatorView(message: String(localized: "loading_chart"))
+                    LoadingIndicatorView(message: String(localized: "loading_chart", locale: locale))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 } else if isCompact {
                     VStack(spacing: 16) {
@@ -84,7 +85,7 @@ struct FinanceScreen: View {
                                 code: viewModel.selectedCurrencyCode,
                                 maximumFractionDigits: 0
                             ),
-                            centerSubtext: String(localized: "total"),
+                            centerSubtext: String(localized: "total", locale: locale),
                             isLoading: false
                         )
                         .frame(maxWidth: 300)
@@ -104,7 +105,7 @@ struct FinanceScreen: View {
                                 code: viewModel.selectedCurrencyCode,
                                 maximumFractionDigits: 0
                             ),
-                            centerSubtext: String(localized: "total"),
+                            centerSubtext: String(localized: "total", locale: locale),
                             isLoading: false
                         )
                         .frame(width: min(340, proxy.size.width * 0.5))
@@ -126,7 +127,7 @@ struct FinanceScreen: View {
     
     private var transactionsSection: some View {
         VStack(spacing: 8) {
-            sectionHeader(String(localized: "transactions"))
+            sectionHeader(String(localized: "transactions", locale: locale))
             
             if let contentErrorMessage = viewModel.contentErrorMessage {
                 transactionsErrorState(message: contentErrorMessage)

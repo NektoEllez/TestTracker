@@ -193,13 +193,9 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
     }
     
-    /// Routes coordinator callbacks through a single MainActor hop and
-    /// keeps mutation points centralized for easier state auditing.
-    private func publish(_ update: @escaping (BrowserViewModel) -> Void) {
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            update(self.viewModel)
-        }
+    /// Centralized state mutation entrypoint for coordinator callbacks.
+    private func publish(_ update: (BrowserViewModel) -> Void) {
+        update(viewModel)
     }
     
     private func shouldOpenInSafari(

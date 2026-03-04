@@ -8,9 +8,9 @@ struct SummaryCardsView: View {
     
     private var metrics: [SummaryMetric] {
         [
-            SummaryMetric(title: String(localized: "income"), amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
-            SummaryMetric(title: String(localized: "expenses"), amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
-            SummaryMetric(title: String(localized: "balance"), amount: balance, color: .appBlue, icon: "equal.circle.fill")
+            SummaryMetric(titleKey: "income", amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
+            SummaryMetric(titleKey: "expenses", amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
+            SummaryMetric(titleKey: "balance", amount: balance, color: .appBlue, icon: "equal.circle.fill")
         ]
     }
     
@@ -41,7 +41,7 @@ struct SummaryCardsView: View {
                 .font(.title3)
                 .foregroundColor(metric.color)
             
-            Text(metric.title)
+            Text(metric.titleKey)
                 .font(.caption)
                 .foregroundColor(.secondary)
             
@@ -63,12 +63,12 @@ struct SummaryCardsView: View {
 }
 
 private struct SummaryMetric: Identifiable {
-    let title: String
+    let titleKey: LocalizedStringKey
     let amount: Decimal
     let color: Color
     let icon: String
     
-    var id: String { title }
+    var id: String { icon }
 }
 
 #Preview("Summary Cards") {

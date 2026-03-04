@@ -1,0 +1,52 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xcuserdatad
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.pins
+
+# SwiftPM
+.swiftpm/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+
+# IDE / tools
+.idea/
+.vscode/
+
+# Local agent configs
+.claude/
+.clinerules-*
+
+# Coverage
+*.profdata
+*.gcov
+*.gcda
+

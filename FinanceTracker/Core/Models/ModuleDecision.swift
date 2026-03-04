@@ -6,12 +6,12 @@ enum ModuleDecision: Equatable {
     
     // MARK: - Save / Load (UserDefaults via AppStorageManager)
     
-    func save() {
+    func save(clearBrowserURL: Bool = true) {
         let storage = AppStorageManager.shared
         switch self {
             case .finance:
                 storage.moduleDecisionType = "finance"
-                storage.browserConfigURL = nil
+                if clearBrowserURL { storage.browserConfigURL = nil }
             case .browser(let url):
                 storage.moduleDecisionType = "browser"
                 storage.browserConfigURL = url

@@ -22,11 +22,10 @@ class BrowserViewModel: ObservableObject {
     let initialURL: URL
     
     init(initialURL: URL) {
-        let resolvedLanguageCode = Self.systemLanguageCode()
+        let resolvedLanguageCode = AppStorageManager.shared.effectiveContentLanguageCode
         self.selectedLanguageCode = resolvedLanguageCode
         self.initialURL = initialURL
         
-        // Resume from last loaded page (per spec). If none, use initial URL with language param.
         if let last = AppStorageManager.shared.lastBrowserURL {
             self.currentURL = last
         } else {

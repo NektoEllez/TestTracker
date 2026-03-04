@@ -70,6 +70,16 @@ final class AppStorageManager {
         get { defaults.string(forKey: Keys.selectedContentLanguageCode) ?? "en" }
         set { defaults.set(newValue, forKey: Keys.selectedContentLanguageCode) }
     }
+
+    /// Effective language: saved preference or system. Used when Browser loads.
+    var effectiveContentLanguageCode: String {
+        if defaults.object(forKey: Keys.selectedContentLanguageCode) != nil {
+            return selectedContentLanguageCode
+        }
+        let system = Locale.preferredLanguages.first ?? Locale.current.identifier
+        let code = system.components(separatedBy: "-").first ?? system.components(separatedBy: "_").first ?? "en"
+        return ContentLanguageCatalog.normalizedCode(code)
+    }
     
     var preferredColorSchemeRaw: String {
         get { defaults.string(forKey: Keys.preferredColorScheme) ?? "system" }

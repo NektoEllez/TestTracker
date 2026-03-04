@@ -41,10 +41,6 @@ class RootViewModel: ObservableObject {
                 case .finance:
                     return module1State()
                 case .browser(let url):
-                    if !configService.hasRemoteConfig {
-                        ModuleDecision.finance.save()
-                        return module1State()
-                    }
                     OrientationManager.shared.unlockAll()
                     return .browser(url)
             }
@@ -84,9 +80,15 @@ class RootViewModel: ObservableObject {
     }
 
     func fallbackToFinance() {
-        ModuleDecision.finance.save()
+        ModuleDecision.finance.save(clearBrowserURL: false)
         OrientationManager.shared.lockPortrait()
         appState = module1State()
+    }
+
+    func openBrowser() {
+        guard let url = storageManager.browserConfigURL else { return }
+        OrientationManager.shared.unlockAll()
+        appState = .browser(url)
     }
     
     private func module1State() -> AppState {

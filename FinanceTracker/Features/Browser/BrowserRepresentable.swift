@@ -20,8 +20,8 @@ struct BrowserRepresentable: UIViewRepresentable {
         configuration.websiteDataStore = WKWebsiteDataStore.default()
         
         let browser = WKWebView(frame: .zero, configuration: configuration)
-        browser.scrollView.contentInsetAdjustmentBehavior = .automatic
-        browser.scrollView.automaticallyAdjustsScrollIndicatorInsets = true
+        browser.scrollView.contentInsetAdjustmentBehavior = .never
+        browser.scrollView.automaticallyAdjustsScrollIndicatorInsets = false
         browser.isOpaque = false
         browser.backgroundColor = .black
         browser.scrollView.backgroundColor = .black

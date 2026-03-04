@@ -19,6 +19,7 @@ struct BrowserScreen: View {
         ZStack {
             BrowserRepresentable(viewModel: viewModel, onFallbackToFinance: onFallbackToFinance)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
             
             if isSettingsOverlayEnabled, #available(iOS 16.0, *) {
                 settingsToolbar
@@ -26,7 +27,7 @@ struct BrowserScreen: View {
             loadingOverlay
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.ignoresSafeArea())
+        .background(Color.black)
         .onAppear {
             OrientationManager.shared.unlockAll()
             viewModel.syncWithSystemLanguage()

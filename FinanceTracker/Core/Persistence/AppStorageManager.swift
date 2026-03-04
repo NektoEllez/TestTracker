@@ -13,6 +13,8 @@ final class AppStorageManager {
     
     private enum Keys {
         static let onboardingCompleted = "onboarding_completed"
+        static let moduleDecisionType = "module_decision_type"
+        static let browserConfigURL = "browser_config_url"
         static let lastBrowserURL = "last_browser_url"
         static let selectedCurrencyCode = "selected_currency_code"
         static let selectedContentLanguageCode = "selected_content_language_code"
@@ -24,6 +26,23 @@ final class AppStorageManager {
     var isOnboardingCompleted: Bool {
         get { defaults.bool(forKey: Keys.onboardingCompleted) }
         set { defaults.set(newValue, forKey: Keys.onboardingCompleted) }
+    }
+    
+    // MARK: - Module Decision (from JSON)
+    
+    var moduleDecisionType: String? {
+        get { defaults.string(forKey: Keys.moduleDecisionType) }
+        set { defaults.set(newValue, forKey: Keys.moduleDecisionType) }
+    }
+    
+    var browserConfigURL: URL? {
+        get {
+            guard let string = defaults.string(forKey: Keys.browserConfigURL) else { return nil }
+            return URL(string: string)
+        }
+        set {
+            defaults.set(newValue?.absoluteString, forKey: Keys.browserConfigURL)
+        }
     }
     
     // MARK: - Browser Last URL

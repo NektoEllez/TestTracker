@@ -18,8 +18,11 @@ struct RootView: View {
                     FinanceContainerView()
                         .transition(.opacity)
                 case .browser(let url):
-                    BrowserScreen(initialURL: url)
-                        .transition(.opacity)
+                    BrowserScreen(
+                        initialURL: url,
+                        onFallbackToFinance: { viewModel.fallbackToFinance() }
+                    )
+                    .transition(.opacity)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

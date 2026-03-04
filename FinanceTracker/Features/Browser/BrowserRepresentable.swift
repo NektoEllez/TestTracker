@@ -3,9 +3,10 @@ import WebKit
 
 struct BrowserRepresentable: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
-    
+    var onFallbackToFinance: (() -> Void)?
+
     func makeCoordinator() -> BrowserCoordinator {
-        BrowserCoordinator(viewModel: viewModel)
+        BrowserCoordinator(viewModel: viewModel, onFallbackToFinance: onFallbackToFinance)
     }
     
     func makeUIView(context: Context) -> WKWebView {

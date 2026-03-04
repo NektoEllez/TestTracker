@@ -7,13 +7,16 @@ struct BrowserScreen: View {
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
     private let isSettingsOverlayEnabled = false
     
-    init(initialURL: URL) {
+    var onFallbackToFinance: (() -> Void)?
+
+    init(initialURL: URL, onFallbackToFinance: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: BrowserViewModel(initialURL: initialURL))
+        self.onFallbackToFinance = onFallbackToFinance
     }
     
     var body: some View {
         ZStack {
-            BrowserRepresentable(viewModel: viewModel)
+            BrowserRepresentable(viewModel: viewModel, onFallbackToFinance: onFallbackToFinance)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             if isSettingsOverlayEnabled, #available(iOS 16.0, *) {
@@ -28,6 +31,18 @@ struct BrowserScreen: View {
         }
         .onDisappear {
             OrientationManager.shared.lockPortrait()
+        }
+        .onChange(of: viewModel.shouldFallbackToFinance) { shouldFallback in
+            guard shouldFallback else { return }
+            viewModel.shouldFallbackToFinance = false
+            onFallbackToFinance?()
+        }
+        .task(id: viewModel.isLoading) {
+            guard viewModel.isLoading else { return }
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            if viewModel.isLoading {
+                viewModel.shouldFallbackToFinance = true
+            }
         }
         .onChange(of: viewModel.errorMessage) { newValue in
             guard let message = newValue else { return }

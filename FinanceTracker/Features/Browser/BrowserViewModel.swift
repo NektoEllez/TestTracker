@@ -15,6 +15,7 @@ class BrowserViewModel: ObservableObject {
     @Published var canGoBack: Bool = false
     @Published var canGoForward: Bool = false
     @Published var errorMessage: String?
+    @Published var shouldFallbackToFinance: Bool = false
     @Published var safariDestination: SafariDestination?
     @Published var selectedLanguageCode: String
     

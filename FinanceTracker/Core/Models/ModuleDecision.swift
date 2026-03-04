@@ -4,35 +4,38 @@ enum ModuleDecision: Equatable {
     case finance
     case browser(URL)
     
-    // MARK: - Persistence Keys
-    
-    private static let typeKey = "module_decision_type"
-    private static let urlKey = "module_decision_url"
-    
-    // MARK: - Save / Load
+    // MARK: - Save / Load (UserDefaults via AppStorageManager)
     
     func save() {
-        let defaults = UserDefaults.standard
+        let storage = AppStorageManager.shared
         switch self {
             case .finance:
-                defaults.set("finance", forKey: Self.typeKey)
-                defaults.removeObject(forKey: Self.urlKey)
+                storage.moduleDecisionType = "finance"
+                storage.browserConfigURL = nil
             case .browser(let url):
-                defaults.set("browser", forKey: Self.typeKey)
-                defaults.set(url.absoluteString, forKey: Self.urlKey)
+                storage.moduleDecisionType = "browser"
+                storage.browserConfigURL = url
         }
     }
     
     static func load() -> ModuleDecision? {
+        let storage = AppStorageManager.shared
         let defaults = UserDefaults.standard
-        guard let type = defaults.string(forKey: typeKey) else { return nil }
+        
+        // Migration: old key module_decision_url → browser_config_url
+        if storage.browserConfigURL == nil,
+           let legacyURL = defaults.string(forKey: "module_decision_url"),
+           let url = URL(string: legacyURL) {
+            storage.browserConfigURL = url
+        }
+        
+        guard let type = storage.moduleDecisionType else { return nil }
         
         switch type {
             case "finance":
                 return .finance
-            case "browser", "webView": // "webView" for migration from old key
-                if let urlString = defaults.string(forKey: urlKey),
-                   let url = URL(string: urlString) {
+            case "browser", "webView":
+                if let url = storage.browserConfigURL {
                     return .browser(url)
                 }
                 return nil

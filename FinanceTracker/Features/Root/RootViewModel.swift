@@ -64,7 +64,7 @@ class RootViewModel: ObservableObject {
                 try? await Task.sleep(nanoseconds: 6_000_000_000)
                 return nil as URL?
             }
-            let first = await group.next()!
+            let first = await group.next() ?? nil
             group.cancelAll()
             return first ?? nil
         }
@@ -81,6 +81,12 @@ class RootViewModel: ObservableObject {
     func completeOnboarding() {
         storageManager.isOnboardingCompleted = true
         appState = .finance
+    }
+
+    func fallbackToFinance() {
+        ModuleDecision.finance.save()
+        OrientationManager.shared.lockPortrait()
+        appState = module1State()
     }
     
     private func module1State() -> AppState {

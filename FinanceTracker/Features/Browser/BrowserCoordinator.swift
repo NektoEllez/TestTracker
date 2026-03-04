@@ -5,6 +5,7 @@ import WebKit
 @MainActor
 final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     var viewModel: BrowserViewModel
+    var onFallbackToFinance: (() -> Void)?
     weak var browser: WKWebView?
     weak var refreshControl: UIRefreshControl?
     
@@ -13,9 +14,10 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     private weak var forwardSwipeGesture: UISwipeGestureRecognizer?
     private var lastRefreshTime: CFAbsoluteTime = 0
     private let throttleInterval: CFAbsoluteTime = 2.5
-    
-    init(viewModel: BrowserViewModel) {
+
+    init(viewModel: BrowserViewModel, onFallbackToFinance: (() -> Void)? = nil) {
         self.viewModel = viewModel
+        self.onFallbackToFinance = onFallbackToFinance
     }
     
     func configure(_ wkView: WKWebView) {
@@ -66,6 +68,7 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
         updateNavigationState(from: browser)
         persistCurrentURL(from: browser)
+        checkForAccessRestrictedPage(in: browser)
     }
     
     func webView(_ browser: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -73,6 +76,7 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         publish { model in
             model.isLoading = false
             model.errorMessage = error.localizedDescription
+            model.shouldFallbackToFinance = true
         }
         updateNavigationState(from: browser)
     }
@@ -86,6 +90,7 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         publish { model in
             model.isLoading = false
             model.errorMessage = error.localizedDescription
+            model.shouldFallbackToFinance = true
         }
         updateNavigationState(from: browser)
     }
@@ -221,5 +226,19 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     
     private func isSameHostOrSubdomain(_ host: String, of baseHost: String) -> Bool {
         host == baseHost || host.hasSuffix("." + baseHost)
+    }
+
+    private func checkForAccessRestrictedPage(in browser: WKWebView) {
+        let script = "document.body?.innerText?.toLowerCase() ?? ''"
+        browser.evaluateJavaScript(script) { [weak self] result, _ in
+            Task { @MainActor in
+                guard let self else { return }
+                guard let text = result as? String else { return }
+                let lower = text.lowercased()
+                if lower.contains("доступ ограничен") || lower.contains("access restricted") {
+                    self.publish { $0.shouldFallbackToFinance = true }
+                }
+            }
+        }
     }
 }

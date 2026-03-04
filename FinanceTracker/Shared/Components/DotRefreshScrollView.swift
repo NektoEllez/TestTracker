@@ -22,7 +22,9 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
         scrollView.alwaysBounceVertical = true
         scrollView.contentInsetAdjustmentBehavior = .automatic
         
-        let hostedView = context.coordinator.hostingController.view!
+        guard let hostedView = context.coordinator.hostingController.view else {
+            return scrollView
+        }
         hostedView.backgroundColor = .clear
         hostedView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(hostedView)
@@ -76,7 +78,7 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
             refreshControl.backgroundColor = .clear
             refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
             
-            let loaderView = loaderHost.view!
+            guard let loaderView = loaderHost.view else { return }
             loaderView.translatesAutoresizingMaskIntoConstraints = false
             loaderView.backgroundColor = .clear
             loaderView.isHidden = true

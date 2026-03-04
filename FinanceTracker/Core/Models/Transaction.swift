@@ -2,10 +2,10 @@ import Foundation
 
 struct TransactionID: Hashable, Codable, Sendable {
     let value: String
-
+    
     init() { value = UUID().uuidString }
     init(_ value: String) { self.value = value }
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let stringID = try? container.decode(String.self) {
@@ -19,7 +19,7 @@ struct TransactionID: Hashable, Codable, Sendable {
             )
         }
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(value)
@@ -33,7 +33,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
     let category: TransactionCategory
     let date: Date
     let note: String?
-
+    
     init(
         id: TransactionID = TransactionID(),
         amount: Decimal,
@@ -49,11 +49,11 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
         self.date = date
         self.note = note
     }
-
+    
     private enum CodingKeys: String, CodingKey {
         case id, amount, type, category, date, note
     }
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(TransactionID.self, forKey: .id)
@@ -61,7 +61,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
         category = try container.decode(TransactionCategory.self, forKey: .category)
         date = try container.decode(Date.self, forKey: .date)
         note = try container.decodeIfPresent(String.self, forKey: .note)
-
+        
         if let decimalAmount = try? container.decode(Decimal.self, forKey: .amount) {
             amount = decimalAmount
         } else {
@@ -69,7 +69,7 @@ struct Transaction: Codable, Identifiable, Equatable, Sendable {
             amount = Decimal(legacyDouble)
         }
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)

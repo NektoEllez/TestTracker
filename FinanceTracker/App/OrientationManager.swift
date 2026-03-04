@@ -3,11 +3,11 @@ import UIKit
 @MainActor
 final class OrientationManager {
     static let shared = OrientationManager()
-
+    
     var orientationLock: UIInterfaceOrientationMask = .portrait
-
+    
     private init() {}
-
+    
     func lockPortrait() {
         orientationLock = .portrait
         if #available(iOS 16.0, *) {
@@ -18,7 +18,7 @@ final class OrientationManager {
         }
         UINavigationController.attemptRotationToDeviceOrientation()
     }
-
+    
     func unlockAll() {
         orientationLock = .allButUpsideDown
     }

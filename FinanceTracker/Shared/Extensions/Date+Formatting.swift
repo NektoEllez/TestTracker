@@ -15,33 +15,33 @@ private enum DateFormatting {
 }
 
 extension Date {
-
-    /// "Mar 4, 2026"
+    
+        /// "Mar 4, 2026"
     var mediumFormatted: String {
         DateFormatting.mediumFormatter.string(from: self)
     }
-
-    /// "4 Mar"
+    
+        /// "4 Mar"
     var shortDayMonth: String {
         DateFormatting.shortDayMonthFormatter.string(from: self)
     }
-
-    /// Returns a date with time components stripped (midnight)
+    
+        /// Returns a date with time components stripped (midnight)
     var startOfDay: Date {
         Calendar.current.startOfDay(for: self)
     }
-
-    /// Check if date is today
+    
+        /// Check if date is today
     var isToday: Bool {
         Calendar.current.isDateInToday(self)
     }
-
-    /// Check if date is yesterday
+    
+        /// Check if date is yesterday
     var isYesterday: Bool {
         Calendar.current.isDateInYesterday(self)
     }
-
-    /// Human-readable section header: "Today", "Yesterday", or "Mar 4, 2026"
+    
+        /// Human-readable section header: "Today", "Yesterday", or "Mar 4, 2026"
     var sectionTitle: String {
         if isToday { return "Today" }
         if isYesterday { return "Yesterday" }

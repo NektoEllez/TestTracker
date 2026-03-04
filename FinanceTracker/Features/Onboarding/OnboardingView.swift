@@ -2,11 +2,11 @@ import SwiftUI
 
 struct OnboardingView: View {
     let onComplete: () -> Void
-
+    
     @State private var currentPage = 0
-
+    
     private let pages = OnboardingPage.pages
-
+    
     var body: some View {
         VStack {
             tabContent
@@ -15,7 +15,7 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackgroundGradient.ignoresSafeArea())
     }
-
+    
     private var tabContent: some View {
         TabView(selection: $currentPage) {
             ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
@@ -25,7 +25,7 @@ struct OnboardingView: View {
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
     }
-
+    
     private var bottomControls: some View {
         HStack {
             skipButton
@@ -35,7 +35,7 @@ struct OnboardingView: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 40)
     }
-
+    
     private var skipButton: some View {
         Button("Skip") {
             onComplete()
@@ -43,7 +43,7 @@ struct OnboardingView: View {
         .font(.body)
         .foregroundColor(.secondary)
     }
-
+    
     @ViewBuilder
     private var nextButton: some View {
         if currentPage < pages.count - 1 {

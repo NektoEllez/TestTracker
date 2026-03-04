@@ -3,9 +3,9 @@ import os
 
 final class TransactionStore: TransactionStoreProtocol {
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "TransactionStore")
-
+    
     private let fileURL: URL
-
+    
     init() {
         guard let documentsDirectory = FileManager.default.urls(
             for: .documentDirectory,
@@ -15,12 +15,12 @@ final class TransactionStore: TransactionStoreProtocol {
         }
         self.fileURL = documentsDirectory.appendingPathComponent("transactions.json")
     }
-
+    
     func loadTransactions() throws -> [Transaction] {
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             return []
         }
-
+        
         do {
             let data = try Data(contentsOf: fileURL)
             let decoder = JSONDecoder()
@@ -33,7 +33,7 @@ final class TransactionStore: TransactionStoreProtocol {
             throw wrappedError
         }
     }
-
+    
     func loadTransactionsPage(offset: Int, limit: Int) throws -> [Transaction] {
         guard offset >= 0 else {
             throw TransactionStoreError.invalidPagination(offset: offset, limit: limit)
@@ -41,18 +41,18 @@ final class TransactionStore: TransactionStoreProtocol {
         guard limit > 0 else {
             throw TransactionStoreError.invalidPagination(offset: offset, limit: limit)
         }
-
+        
         let allTransactions = try loadTransactions()
         guard offset < allTransactions.count else { return [] }
-
+        
         let endIndex = min(offset + limit, allTransactions.count)
         return Array(allTransactions[offset..<endIndex])
     }
-
+    
     func transactionsCount() throws -> Int {
         try loadTransactions().count
     }
-
+    
     func saveTransactions(_ transactions: [Transaction]) throws {
         do {
             let encoder = JSONEncoder()
@@ -66,13 +66,13 @@ final class TransactionStore: TransactionStoreProtocol {
             throw wrappedError
         }
     }
-
+    
     func addTransaction(_ transaction: Transaction) throws {
         var transactions = try loadTransactions()
         transactions.append(transaction)
         try saveTransactions(transactions)
     }
-
+    
     func deleteTransaction(id: TransactionID) throws {
         var transactions = try loadTransactions()
         transactions.removeAll { $0.id == id }
@@ -89,12 +89,12 @@ enum TransactionStoreError: Error {
 extension TransactionStoreError: LocalizedError {
     var errorDescription: String? {
         switch self {
-        case .readFailed(let error):
-            return "Failed to load transactions: \(error.localizedDescription)"
-        case .writeFailed(let error):
-            return "Failed to save transactions: \(error.localizedDescription)"
-        case let .invalidPagination(offset, limit):
-            return "Invalid pagination settings (offset: \(offset), limit: \(limit))."
+            case .readFailed(let error):
+                return "Failed to load transactions: \(error.localizedDescription)"
+            case .writeFailed(let error):
+                return "Failed to save transactions: \(error.localizedDescription)"
+            case let .invalidPagination(offset, limit):
+                return "Invalid pagination settings (offset: \(offset), limit: \(limit))."
         }
     }
 }

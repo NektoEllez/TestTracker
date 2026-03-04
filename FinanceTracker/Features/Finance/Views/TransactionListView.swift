@@ -9,7 +9,7 @@ struct TransactionListView: View {
     let onDelete: (TransactionGroup, IndexSet) -> Void
     let onLoadMore: () -> Void
     let onRetryLoadMore: () -> Void
-
+    
     var body: some View {
         if groups.isEmpty {
             emptyState
@@ -17,7 +17,7 @@ struct TransactionListView: View {
             transactionSections
         }
     }
-
+    
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "tray")
@@ -33,7 +33,7 @@ struct TransactionListView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
     }
-
+    
     private var transactionSections: some View {
         VStack(spacing: 0) {
             ForEach(groups) { group in
@@ -43,8 +43,8 @@ struct TransactionListView: View {
                             transaction: transaction,
                             currencyCode: currencyCode
                         )
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 4)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 4)
                     }
                 } header: {
                     sectionHeader(group.sectionTitle)
@@ -55,11 +55,11 @@ struct TransactionListView: View {
                     }
                 }
             }
-
+            
             paginationFooter
         }
     }
-
+    
     private func sectionHeader(_ title: String) -> some View {
         HStack {
             Text(title)
@@ -73,7 +73,7 @@ struct TransactionListView: View {
         .padding(.vertical, 8)
         .background(Color.appBackground)
     }
-
+    
     @ViewBuilder
     private var paginationFooter: some View {
         if isLoadingNextPage {
@@ -91,7 +91,7 @@ struct TransactionListView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
-
+                
                 Button("Retry", action: onRetryLoadMore)
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
@@ -117,7 +117,7 @@ struct TransactionListView: View {
         onLoadMore: {},
         onRetryLoadMore: {}
     )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 
 #Preview("Transaction List - With Data") {
@@ -131,5 +131,5 @@ struct TransactionListView: View {
         onLoadMore: {},
         onRetryLoadMore: {}
     )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
 }

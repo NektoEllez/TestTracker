@@ -3,7 +3,7 @@ import SwiftUI
 struct FinanceScreen: View {
     @ObservedObject var viewModel: FinanceViewModel
     @Environment(\.toastStore) private var toastStore
-
+    
     var body: some View {
         DotRefreshScrollView(onRefresh: {
             await viewModel.refreshWithFakeDelay()
@@ -25,7 +25,7 @@ struct FinanceScreen: View {
             )
         }
     }
-
+    
     @ViewBuilder
     private var contentBody: some View {
         VStack(spacing: 20) {
@@ -41,11 +41,11 @@ struct FinanceScreen: View {
         .padding(.top, 8)
         .padding(.bottom, 120)
     }
-
+    
     private var shouldShowGlobalLoader: Bool {
         viewModel.isPullToRefreshing || viewModel.isLoadingContent || viewModel.isChartLoading
     }
-
+    
     private var summarySection: some View {
         SummaryCardsView(
             income: viewModel.totalIncome,
@@ -54,24 +54,24 @@ struct FinanceScreen: View {
             currencyCode: viewModel.selectedCurrencyCode
         )
     }
-
+    
     @ViewBuilder
     private var chartSection: some View {
         if viewModel.isChartLoading || !viewModel.expenseByCategory.isEmpty {
             VStack(spacing: 12) {
                 sectionHeader("Expense Breakdown")
-
+                
                 let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory)
                 chartContent(segments, isLoading: viewModel.isChartLoading)
                     .cardSurface(cornerRadius: 16)
             }
         }
     }
-
+    
     private func chartContent(_ segments: [ChartSegment], isLoading: Bool) -> some View {
         GeometryReader { proxy in
             let isCompact = proxy.size.width < 520
-
+            
             Group {
                 if isLoading {
                     LoadingIndicatorView(message: "Loading chart...")
@@ -89,7 +89,7 @@ struct FinanceScreen: View {
                         )
                         .frame(maxWidth: 300)
                         .frame(maxWidth: .infinity, alignment: .center)
-
+                        
                         ChartLegendView(
                             segments: segments,
                             currencyCode: viewModel.selectedCurrencyCode
@@ -108,7 +108,7 @@ struct FinanceScreen: View {
                             isLoading: false
                         )
                         .frame(width: min(340, proxy.size.width * 0.5))
-
+                        
                         ChartLegendView(
                             segments: segments,
                             currencyCode: viewModel.selectedCurrencyCode
@@ -123,11 +123,11 @@ struct FinanceScreen: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
     }
-
+    
     private var transactionsSection: some View {
         VStack(spacing: 8) {
             sectionHeader("Transactions")
-
+            
             if let contentErrorMessage = viewModel.contentErrorMessage {
                 transactionsErrorState(message: contentErrorMessage)
                     .cardSurface(cornerRadius: 12)
@@ -152,24 +152,24 @@ struct FinanceScreen: View {
             }
         }
     }
-
+    
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.headline)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private func transactionsErrorState(message: String) -> some View {
         VStack(spacing: 10) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.title3)
                 .foregroundColor(.orange)
-
+            
             Text(message)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-
+            
             Button("Retry") {
                 viewModel.retryLoadingContent()
             }

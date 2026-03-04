@@ -4,16 +4,16 @@ struct SkeletonBlockView: View {
     var width: CGFloat? = nil
     var height: CGFloat
     var cornerRadius: CGFloat = 10
-
+    
     @State private var shimmerOffset: CGFloat = -1.2
-
+    
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(Color.primary.opacity(0.08))
             .overlay {
                 GeometryReader { proxy in
                     let travel = proxy.size.width + proxy.size.height
-
+                    
                     LinearGradient(
                         colors: [
                             .clear,

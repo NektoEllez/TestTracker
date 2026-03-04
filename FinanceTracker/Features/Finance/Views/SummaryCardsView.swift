@@ -5,7 +5,7 @@ struct SummaryCardsView: View {
     let expenses: Decimal
     let balance: Decimal
     let currencyCode: String
-
+    
     private var metrics: [SummaryMetric] {
         [
             SummaryMetric(title: "Income", amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
@@ -13,7 +13,7 @@ struct SummaryCardsView: View {
             SummaryMetric(title: "Balance", amount: balance, color: .appBlue, icon: "equal.circle.fill")
         ]
     }
-
+    
     var body: some View {
         if #available(iOS 26, *) {
             GlassEffectContainer(spacing: 12) {
@@ -23,7 +23,7 @@ struct SummaryCardsView: View {
             cardsContent
         }
     }
-
+    
     private var cardsContent: some View {
         LazyVGrid(
             columns: [GridItem(.adaptive(minimum: 120), spacing: 12)],
@@ -34,17 +34,17 @@ struct SummaryCardsView: View {
             }
         }
     }
-
+    
     private func summaryCard(_ metric: SummaryMetric) -> some View {
         VStack(spacing: 6) {
             Image(systemName: metric.icon)
                 .font(.title3)
                 .foregroundColor(metric.color)
-
+            
             Text(metric.title)
                 .font(.caption)
                 .foregroundColor(.secondary)
-
+            
             Text(metric.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 0))
                 .font(.subheadline)
                 .fontWeight(.bold)
@@ -67,7 +67,7 @@ private struct SummaryMetric: Identifiable {
     let amount: Decimal
     let color: Color
     let icon: String
-
+    
     var id: String { title }
 }
 

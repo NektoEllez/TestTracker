@@ -2,11 +2,11 @@ import SwiftUI
 
 struct FinanceSkeletonView: View {
     let showTopLoader: Bool
-
+    
     init(showTopLoader: Bool = true) {
         self.showTopLoader = showTopLoader
     }
-
+    
     var body: some View {
         VStack(spacing: 20) {
             if showTopLoader {
@@ -14,7 +14,7 @@ struct FinanceSkeletonView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 6)
             }
-
+            
             summarySkeleton
             sectionHeader(width: 190)
             chartSkeleton
@@ -26,7 +26,7 @@ struct FinanceSkeletonView: View {
         .padding(.bottom, 80)
         .accessibilityHidden(true)
     }
-
+    
     private var summarySkeleton: some View {
         LazyVGrid(
             columns: [GridItem(.adaptive(minimum: 120), spacing: 12)],
@@ -44,17 +44,17 @@ struct FinanceSkeletonView: View {
             }
         }
     }
-
+    
     private func sectionHeader(width: CGFloat) -> some View {
         SkeletonBlockView(width: width, height: 24, cornerRadius: 8)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private var chartSkeleton: some View {
         VStack(spacing: 16) {
             SkeletonBlockView(width: 184, height: 184, cornerRadius: 92)
                 .frame(maxWidth: .infinity, alignment: .center)
-
+            
             VStack(spacing: 12) {
                 ForEach(0..<4, id: \.self) { _ in
                     HStack(spacing: 10) {
@@ -73,20 +73,20 @@ struct FinanceSkeletonView: View {
         .padding(.vertical, 12)
         .cardSurface(cornerRadius: 16)
     }
-
+    
     private var transactionsSkeleton: some View {
         VStack(spacing: 10) {
             ForEach(0..<6, id: \.self) { _ in
                 HStack(spacing: 12) {
                     SkeletonBlockView(width: 30, height: 30, cornerRadius: 8)
-
+                    
                     VStack(alignment: .leading, spacing: 6) {
                         SkeletonBlockView(width: 120, height: 14, cornerRadius: 6)
                         SkeletonBlockView(width: 84, height: 10, cornerRadius: 5)
                     }
-
+                    
                     Spacer(minLength: 0)
-
+                    
                     SkeletonBlockView(width: 70, height: 14, cornerRadius: 6)
                 }
             }

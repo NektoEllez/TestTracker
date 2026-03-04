@@ -4,17 +4,18 @@ struct WebViewScreen: View {
     @StateObject private var viewModel: WebViewModel
     @Environment(\.toastStore) private var toastStore
     @State private var isShowingLanguageSheet = false
-
+    @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
+    
     init(initialURL: URL) {
         _viewModel = StateObject(wrappedValue: WebViewModel(initialURL: initialURL))
     }
-
+    
     var body: some View {
         ZStack {
             WebViewRepresentable(viewModel: viewModel)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
-
+            
             if #available(iOS 16.0, *) {
                 settingsToolbar
             }
@@ -54,9 +55,11 @@ struct WebViewScreen: View {
                     isShowingLanguageSheet = false
                 }
             )
+            .preferredColorScheme(mappedColorScheme)
         }
+        .preferredColorScheme(mappedColorScheme)
     }
-
+    
     private var settingsToolbar: some View {
         VStack {
             HStack {
@@ -80,19 +83,19 @@ struct WebViewScreen: View {
                 }
                 .padding(.leading, 12)
                 .padding(.top, 8)
-
+                
                 Spacer()
             }
             Spacer()
         }
     }
-
+    
     @ViewBuilder
     private var loadingOverlay: some View {
         if viewModel.isLoading {
             ZStack {
                 Color.black.opacity(0.08)
-
+                
                 VStack(spacing: 10) {
                     DotArcLoaderView(size: 70, dotSize: 14)
                     Text("Loading...")
@@ -111,14 +114,26 @@ struct WebViewScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
     }
+    
+    private var mappedColorScheme: ColorScheme? {
+        switch preferredColorSchemeRaw {
+            case "light":
+                return .light
+            case "dark":
+                return .dark
+            default:
+                return nil
+        }
+    }
 }
 
 private struct WebLanguagePickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
     let selectedCode: String
     let onSelect: (String) -> Void
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
     @State private var pendingSelectionCode: String?
-
+    
     var body: some View {
         NavigationView {
             List {
@@ -129,8 +144,11 @@ private struct WebLanguagePickerSheet: View {
                         Text("Dark").tag("dark")
                     }
                     .pickerStyle(.segmented)
+                    .onChange(of: preferredColorSchemeRaw) { newValue in
+                        AppearanceManager.apply(rawValue: newValue)
+                    }
                 }
-
+                
                 Section("Language") {
                     ForEach(WebLanguageCatalog.supported) { option in
                         Button {
@@ -162,8 +180,8 @@ private struct WebLanguagePickerSheet: View {
                         .buttonStyle(.plain)
                         .listRowBackground(
                             (effectiveSelectedCode == option.code)
-                                ? Color.primary.opacity(0.14)
-                                : Color.clear
+                            ? Color.primary.opacity(0.14)
+                            : Color.clear
                         )
                     }
                 }
@@ -171,9 +189,21 @@ private struct WebLanguagePickerSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Close")
+                    }
+                }
+            }
         }
     }
-
+    
     private var effectiveSelectedCode: String {
         pendingSelectionCode ?? selectedCode
     }

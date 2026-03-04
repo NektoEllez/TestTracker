@@ -14,8 +14,6 @@ extension Color {
     static let appRed = Color(red: 0.95, green: 0.3, blue: 0.3)
     static let appBlue = Color(red: 0.2, green: 0.5, blue: 0.95)
     static let appAccent = Color(red: 0.35, green: 0.45, blue: 0.95)
-
-    // WGSN/Coloro 2026 trend reference: Transformative Teal-inspired background palette.
     static var appBackgroundGradient: LinearGradient {
         LinearGradient(
             colors: [

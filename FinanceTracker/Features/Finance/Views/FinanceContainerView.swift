@@ -3,7 +3,7 @@ import SwiftUI
 struct FinanceContainerView: View {
     @StateObject private var viewModel = FinanceViewModel()
     @Environment(\.toastStore) private var toastStore
-
+    
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottomTrailing) {
@@ -50,7 +50,7 @@ struct FinanceContainerView: View {
             OrientationManager.shared.lockPortrait()
         }
     }
-
+    
     private var fabButton: some View {
         Button {
             Haptics.impact(.medium)
@@ -69,7 +69,7 @@ struct FinanceContainerView: View {
         .padding(.bottom, 20)
         .accessibilityLabel("Add transaction")
     }
-
+    
     private var currencyMenu: some View {
         Menu {
             Picker("Currency", selection: Binding(
@@ -117,24 +117,24 @@ private struct TransparentNavigationBarConfigurator: UIViewControllerRepresentab
     func makeUIViewController(context: Context) -> UIViewController {
         UIViewController()
     }
-
+    
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         let navController = uiViewController.navigationController
-            ?? findNavigationController(from: uiViewController.view)
-
+        ?? findNavigationController(from: uiViewController.view)
+        
         guard let navigationController = navController else { return }
-
+        
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.backgroundColor = .clear
         appearance.shadowColor = .clear
-
+        
         navigationController.navigationBar.standardAppearance = appearance
         navigationController.navigationBar.compactAppearance = appearance
         navigationController.navigationBar.scrollEdgeAppearance = appearance
         navigationController.navigationBar.isTranslucent = true
     }
-
+    
     private func findNavigationController(from view: UIView?) -> UINavigationController? {
         var responder: UIResponder? = view
         while let next = responder {

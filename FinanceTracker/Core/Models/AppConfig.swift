@@ -1,18 +1,18 @@
 import Foundation
 
 struct AppConfig {
-
-    /// Priority keys to search for a URL in the JSON config
+    /// Priority keys used when config JSON is an object.
     private static let priorityKeys = ["url", "link", "redirect"]
-
-    /// Attempts to extract a valid URL from arbitrary JSON data.
-    /// Checks priority keys first, then scans all string values.
+    
+    /// Extracts first valid HTTP(S) URL from the config payload.
+    /// Supports:
+    /// - root dictionary: checks `priorityKeys`, then scans string values,
+    /// - root string: validates directly.
     static func extractURL(from data: Data) -> URL? {
         guard let json = try? JSONSerialization.jsonObject(with: data, options: []) else {
             return nil
         }
-
-        // If root is a dictionary, search by priority keys first
+        
         if let dict = json as? [String: Any] {
             for key in priorityKeys {
                 if let urlString = dict[key] as? String,
@@ -20,7 +20,6 @@ struct AppConfig {
                     return url
                 }
             }
-            // Then scan all string values
             for (_, value) in dict {
                 if let urlString = value as? String,
                    let url = validatedURL(from: urlString) {
@@ -28,17 +27,16 @@ struct AppConfig {
                 }
             }
         }
-
-        // If root is a string
+        
         if let urlString = json as? String,
            let url = validatedURL(from: urlString) {
             return url
         }
-
+        
         return nil
     }
-
-    /// Validates that a string is a proper HTTP/HTTPS URL with a host
+    
+    /// Validates HTTP(S) URLs with non-empty host only.
     private static func validatedURL(from string: String) -> URL? {
         guard let url = URL(string: string),
               let scheme = url.scheme?.lowercased(),

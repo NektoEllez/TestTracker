@@ -1,16 +1,16 @@
 import Foundation
 
-/// Wrapper around UserDefaults for app-level flags and small values
+/// Wrapper around UserDefaults for app-level flags and small values.
 @MainActor
 final class AppStorageManager {
     static let shared = AppStorageManager()
-
+    
     private let defaults = UserDefaults.standard
-
+    
     private init() {}
-
+    
     // MARK: - Keys
-
+    
     private enum Keys {
         static let onboardingCompleted = "onboarding_completed"
         static let lastWebViewURL = "last_webview_url"
@@ -18,16 +18,16 @@ final class AppStorageManager {
         static let selectedWebLanguageCode = "selected_web_language_code"
         static let preferredColorScheme = "preferred_color_scheme"
     }
-
+    
     // MARK: - Onboarding
-
+    
     var isOnboardingCompleted: Bool {
         get { defaults.bool(forKey: Keys.onboardingCompleted) }
         set { defaults.set(newValue, forKey: Keys.onboardingCompleted) }
     }
-
+    
     // MARK: - WebView Last URL
-
+    
     var lastWebViewURL: URL? {
         get {
             guard let string = defaults.string(forKey: Keys.lastWebViewURL) else { return nil }
@@ -37,21 +37,21 @@ final class AppStorageManager {
             defaults.set(newValue?.absoluteString, forKey: Keys.lastWebViewURL)
         }
     }
-
+    
     // MARK: - Currency
-
+    
     var selectedCurrencyCode: String {
         get { defaults.string(forKey: Keys.selectedCurrencyCode) ?? "USD" }
         set { defaults.set(newValue, forKey: Keys.selectedCurrencyCode) }
     }
-
+    
     // MARK: - WebView Language
-
+    
     var selectedWebLanguageCode: String {
         get { defaults.string(forKey: Keys.selectedWebLanguageCode) ?? "en" }
         set { defaults.set(newValue, forKey: Keys.selectedWebLanguageCode) }
     }
-
+    
     var preferredColorSchemeRaw: String {
         get { defaults.string(forKey: Keys.preferredColorScheme) ?? "system" }
         set { defaults.set(newValue, forKey: Keys.preferredColorScheme) }

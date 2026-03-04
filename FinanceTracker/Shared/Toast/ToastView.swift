@@ -3,7 +3,7 @@ import SwiftUI
 struct ToastView: View {
     let message: ToastMessage
     let onDismiss: () -> Void
-
+    
     var body: some View {
         Button(action: onDismiss) {
             HStack(spacing: 12) {
@@ -12,13 +12,13 @@ struct ToastView: View {
                         .font(.body.weight(.semibold))
                         .foregroundColor(iconColor)
                 }
-
+                
                 Text(message.text)
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(.primary)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
-
+                
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 16)
@@ -36,30 +36,30 @@ struct ToastView: View {
         .accessibilityLabel(message.text)
         .accessibilityHint("Double tap to dismiss")
     }
-
+    
     private var iconColor: Color {
         switch message.style {
-        case .default:
-            return .secondary
-        case .success:
-            return .green
-        case .warning:
-            return .orange
-        case .error:
-            return .red
+            case .default:
+                return .secondary
+            case .success:
+                return .green
+            case .warning:
+                return .orange
+            case .error:
+                return .red
         }
     }
-
+    
     private var backgroundColor: Color {
         switch message.style {
-        case .default:
-            return Color.cardBackground.opacity(0.45)
-        case .success:
-            return Color.green.opacity(0.14)
-        case .warning:
-            return Color.orange.opacity(0.14)
-        case .error:
-            return Color.red.opacity(0.14)
+            case .default:
+                return Color.cardBackground.opacity(0.45)
+            case .success:
+                return Color.green.opacity(0.14)
+            case .warning:
+                return Color.orange.opacity(0.14)
+            case .error:
+                return Color.red.opacity(0.14)
         }
     }
 }

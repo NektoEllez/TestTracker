@@ -3,7 +3,7 @@ import SwiftUI
 struct TransactionRowView: View {
     let transaction: Transaction
     let currencyCode: String
-
+    
     var body: some View {
         HStack(spacing: 12) {
             categoryIcon
@@ -13,7 +13,7 @@ struct TransactionRowView: View {
         }
         .padding(.vertical, 4)
     }
-
+    
     private var categoryIcon: some View {
         Image(systemName: transaction.category.icon)
             .font(.body)
@@ -22,13 +22,13 @@ struct TransactionRowView: View {
             .background(transaction.category.color)
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
-
+    
     private var transactionDetails: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(transaction.category.displayName)
                 .font(.subheadline)
                 .fontWeight(.medium)
-
+            
             if let note = transaction.note, !note.isEmpty {
                 Text(note)
                     .font(.caption)
@@ -37,14 +37,14 @@ struct TransactionRowView: View {
             }
         }
     }
-
+    
     private var amountLabel: some View {
         Text(formattedAmount)
             .font(.subheadline)
             .fontWeight(.semibold)
             .foregroundColor(transaction.type == .income ? .appGreen : .appRed)
     }
-
+    
     private var formattedAmount: String {
         let prefix = transaction.type == .income ? "+" : "-"
         let formatted = transaction.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 2)
@@ -57,6 +57,6 @@ struct TransactionRowView: View {
         transaction: PreviewData.sampleTransaction,
         currencyCode: "USD"
     )
-        .frame(maxWidth: .infinity)
-        .padding()
+    .frame(maxWidth: .infinity)
+    .padding()
 }

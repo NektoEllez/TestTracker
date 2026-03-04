@@ -4,13 +4,13 @@ struct SplashView: View {
     @State private var isAnimating = false
     @State private var opacity: Double = 0
     private let logoSize: CGFloat = 200
-
+    
     var body: some View {
         ZStack {
             Color.appAccent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
-
+            
             VStack(spacing: 16) {
                 iconView
                 titleView
@@ -27,7 +27,7 @@ struct SplashView: View {
             }
         }
     }
-
+    
     private var iconView: some View {
         Image("Logo")
             .resizable()
@@ -37,7 +37,7 @@ struct SplashView: View {
             .scaleEffect(isAnimating ? 1.04 : 0.96)
             .opacity(opacity)
     }
-
+    
     private var titleView: some View {
         Text("FinanceTracker")
             .font(.largeTitle)
@@ -45,7 +45,7 @@ struct SplashView: View {
             .foregroundColor(.white)
             .opacity(opacity)
     }
-
+    
     private var primaryLoader: some View {
         DotArcLoaderView(size: 84, dotSize: 15)
             .padding(10)

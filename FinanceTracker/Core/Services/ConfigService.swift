@@ -8,39 +8,39 @@ final class ConfigService: ConfigServiceProtocol, Sendable {
         static let timeout: TimeInterval = 15
         static let isRemoteConfigEnabled = true
     }
-
+    
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "ConfigService")
-
+    
     private let configURL: URL
     let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
-
+    
     init(bundle: Bundle = .main) {
         let rawURLString = (bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String)
-            ?? Constants.fallbackConfigURLString
-
+        ?? Constants.fallbackConfigURLString
+        
         guard let url = URL(string: rawURLString) else {
             preconditionFailure("ConfigURL is invalid")
         }
-
+        
         self.configURL = url
     }
-
+    
     func fetchConfig() async throws -> URL? {
         var request = URLRequest(url: configURL)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         request.timeoutInterval = Constants.timeout
-
+        
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-
+            
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw ConfigServiceError.invalidResponse
             }
-
+            
             guard (200...299).contains(httpResponse.statusCode) else {
                 throw ConfigServiceError.httpStatus(httpResponse.statusCode)
             }
-
+            
             return AppConfig.extractURL(from: data)
         } catch let error as URLError {
             throw ConfigServiceError.network(error)
@@ -65,25 +65,25 @@ enum ConfigServiceError: Error, Sendable {
 extension ConfigServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
-        case .network(let urlError):
-            return "Network error: \(urlError.localizedDescription)"
-        case .invalidResponse:
-            return "Invalid server response"
-        case .httpStatus(let code):
-            return "Server returned error status: \(code)"
-        case .unknown(let message):
-            return "Unexpected error: \(message)"
+            case .network(let urlError):
+                return "Network error: \(urlError.localizedDescription)"
+            case .invalidResponse:
+                return "Invalid server response"
+            case .httpStatus(let code):
+                return "Server returned error status: \(code)"
+            case .unknown(let message):
+                return "Unexpected error: \(message)"
         }
     }
-
+    
     var recoverySuggestion: String? {
         switch self {
-        case .network:
-            return "Check internet connection and try again"
-        case .invalidResponse, .httpStatus:
-            return "Try again later"
-        case .unknown:
-            return "Try restarting the app"
+            case .network:
+                return "Check internet connection and try again"
+            case .invalidResponse, .httpStatus:
+                return "Try again later"
+            case .unknown:
+                return "Try restarting the app"
         }
     }
 }

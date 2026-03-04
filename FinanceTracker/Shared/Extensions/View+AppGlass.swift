@@ -6,7 +6,7 @@ enum AppGlassStyle {
 }
 
 extension View {
-    /// Card background + glass border — shared across Finance views and skeletons.
+        /// Card background + glass border — shared across Finance views and skeletons.
     func cardSurface(cornerRadius: CGFloat) -> some View {
         self
             .background(
@@ -15,19 +15,19 @@ extension View {
             )
             .appGlassSurface(cornerRadius: cornerRadius)
     }
-
+    
     @ViewBuilder
     func appGlassSurface(cornerRadius: CGFloat = 16, style: AppGlassStyle = .regular) -> some View {
         if #available(iOS 26, *) {
             switch style {
-            case .regular:
-                self
-                    .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            case .interactive:
-                self
-                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                case .regular:
+                    self
+                        .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                case .interactive:
+                    self
+                        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             }
         } else {
             self

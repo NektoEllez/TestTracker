@@ -3,9 +3,9 @@ import SwiftUI
 struct DotArcLoaderView: View {
     var size: CGFloat = 82
     var dotSize: CGFloat = 16
-
+    
     @State private var isAnimating = false
-
+    
     private let colors: [Color] = [
         Color(red: 0.95, green: 0.27, blue: 0.25), // red
         Color(red: 0.21, green: 0.49, blue: 0.88), // blue
@@ -13,9 +13,9 @@ struct DotArcLoaderView: View {
         Color(red: 0.96, green: 0.82, blue: 0.20), // yellow
         Color(red: 0.98, green: 0.61, blue: 0.12)  // orange
     ]
-
+    
     private let angles: [Double] = [200, 235, 270, 305, 340]
-
+    
     var body: some View {
         ZStack {
             ForEach(colors.indices, id: \.self) { index in
@@ -27,8 +27,8 @@ struct DotArcLoaderView: View {
                     .opacity(isAnimating ? 1.0 : 0.6)
                     .animation(
                         .easeInOut(duration: 0.55)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.1),
+                        .repeatForever(autoreverses: true)
+                        .delay(Double(index) * 0.1),
                         value: isAnimating
                     )
             }
@@ -43,7 +43,7 @@ struct DotArcLoaderView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Loading")
     }
-
+    
     private func position(for index: Int) -> CGSize {
         let radius = size * 0.32
         let angle = angles[index] * .pi / 180

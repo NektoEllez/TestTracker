@@ -5,18 +5,18 @@ private enum CurrencyFormatting {
         let safeDigits = max(0, maximumFractionDigits)
         let uppercasedCode = code.uppercased()
         let key = "FinanceTracker.CurrencyFormatter.\(uppercasedCode).\(safeDigits)"
-
+        
         if let cached = Thread.current.threadDictionary[key] as? NumberFormatter {
             return cached
         }
-
+        
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = uppercasedCode
         formatter.locale = .current
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = safeDigits
-
+        
         Thread.current.threadDictionary[key] = formatter
         return formatter
     }
@@ -30,7 +30,7 @@ extension Decimal {
         )
         return formatter.string(from: NSDecimalNumber(decimal: self)) ?? "$0"
     }
-
+    
     var doubleValue: Double {
         NSDecimalNumber(decimal: self).doubleValue
     }

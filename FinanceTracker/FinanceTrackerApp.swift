@@ -5,7 +5,7 @@ struct FinanceTrackerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var toastStore = ToastStore()
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
-
+    
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -14,17 +14,23 @@ struct FinanceTrackerApp: App {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackgroundGradient.ignoresSafeArea())
                 .preferredColorScheme(mappedColorScheme)
+                .onAppear {
+                    AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
+                }
+                .onChange(of: preferredColorSchemeRaw) { newValue in
+                    AppearanceManager.apply(rawValue: newValue)
+                }
         }
     }
-
+    
     private var mappedColorScheme: ColorScheme? {
         switch preferredColorSchemeRaw {
-        case "light":
-            return .light
-        case "dark":
-            return .dark
-        default:
-            return nil
+            case "light":
+                return .light
+            case "dark":
+                return .dark
+            default:
+                return nil
         }
     }
 }

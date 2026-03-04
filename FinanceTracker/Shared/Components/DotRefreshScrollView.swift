@@ -54,6 +54,8 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
         
         private let loaderHost: UIHostingController<DotArcLoaderView>
         private var refreshTask: Task<Void, Never>?
+        private var lastRefreshTime: CFAbsoluteTime = 0
+        private let throttleInterval: CFAbsoluteTime = 2.5
         
         init(parent: DotRefreshScrollView, content: Content) {
             self.parent = parent
@@ -90,6 +92,11 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
         
         @objc
         private func handleRefresh() {
+            let now = CFAbsoluteTimeGetCurrent()
+            if now - lastRefreshTime < throttleInterval {
+                refreshControl.endRefreshing()
+                return
+            }
             guard refreshTask == nil else { return }
             
             Haptics.impact(.light)
@@ -101,6 +108,7 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
                     self.loaderHost.view.isHidden = true
                     self.refreshControl.endRefreshing()
                     self.refreshTask = nil
+                    self.lastRefreshTime = CFAbsoluteTimeGetCurrent()
                 }
             }
         }

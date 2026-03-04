@@ -18,12 +18,12 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>ConfigURL</key>
-	<string>https://drive.google.com/uc?export=download&amp;id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is required for web content that uses the camera.</string>

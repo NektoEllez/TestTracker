@@ -25,9 +25,12 @@ class BrowserViewModel: ObservableObject {
         self.selectedLanguageCode = resolvedLanguageCode
         self.initialURL = initialURL
         
-        // Resume from last successful page when available, then enforce selected language.
-        let baseURL = AppStorageManager.shared.lastBrowserURL ?? initialURL
-        self.currentURL = BrowserViewModel.applyingLanguage(code: resolvedLanguageCode, to: baseURL)
+        // Resume from last loaded page (per spec). If none, use initial URL with language param.
+        if let last = AppStorageManager.shared.lastBrowserURL {
+            self.currentURL = last
+        } else {
+            self.currentURL = BrowserViewModel.applyingLanguage(code: resolvedLanguageCode, to: initialURL)
+        }
     }
     
     func saveCurrentURL() {

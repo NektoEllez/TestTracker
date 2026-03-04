@@ -11,6 +11,8 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     private var progressObservation: NSKeyValueObservation?
     private weak var backSwipeGesture: UISwipeGestureRecognizer?
     private weak var forwardSwipeGesture: UISwipeGestureRecognizer?
+    private var lastRefreshTime: CFAbsoluteTime = 0
+    private let throttleInterval: CFAbsoluteTime = 2.5
     
     init(viewModel: BrowserViewModel) {
         self.viewModel = viewModel
@@ -147,6 +149,12 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     // MARK: - Actions
     
     @objc func handleRefresh(_ sender: UIRefreshControl) {
+        let now = CFAbsoluteTimeGetCurrent()
+        if now - lastRefreshTime < throttleInterval {
+            refreshControl?.endRefreshing()
+            return
+        }
+        lastRefreshTime = now
         browser?.reload()
     }
 

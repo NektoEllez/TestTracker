@@ -4,7 +4,9 @@ import os
 final class ConfigService: ConfigServiceProtocol, Sendable {
     private enum Constants {
         static let infoPlistConfigURLKey = "ConfigURL"
-        static let timeout: TimeInterval = 15
+        /// JSON config source (per spec). Website URL is extracted from JSON, not stored here.
+        static let defaultJSONURL = URL(string: "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU")
+        static let timeout: TimeInterval = 5
         static let isRemoteConfigEnabled = true
     }
     
@@ -12,13 +14,15 @@ final class ConfigService: ConfigServiceProtocol, Sendable {
     
     private let configURL: URL?
     let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
+    var hasRemoteConfig: Bool { configURL != nil }
     
     init(bundle: Bundle = .main) {
-        let rawURLString = bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String
-        if let rawURLString {
-            self.configURL = URL(string: rawURLString)
+        let raw = bundle.object(forInfoDictionaryKey: Constants.infoPlistConfigURLKey) as? String
+        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmed, !trimmed.isEmpty, let url = URL(string: trimmed) {
+            self.configURL = url
         } else {
-            self.configURL = nil
+            self.configURL = Constants.defaultJSONURL
         }
     }
     

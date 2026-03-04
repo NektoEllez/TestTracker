@@ -101,10 +101,6 @@ final class FinanceViewModel: ObservableObject {
         categoryBreakdown(for: .expense)
     }
 
-    var incomeByCategory: [(category: TransactionCategory, amount: Double)] {
-        categoryBreakdown(for: .income)
-    }
-
     func loadData() {
         startChartLoading()
         isLoadingContent = true
@@ -194,10 +190,6 @@ final class FinanceViewModel: ObservableObject {
         storageManager.selectedCurrencyCode = normalizedCode
     }
 
-    func chartCenterText() -> String {
-        totalExpenses.formattedCurrency(code: selectedCurrencyCode, maximumFractionDigits: 0)
-    }
-
     private func loadNextPage() async {
         guard canLoadMoreTransactions else { return }
         guard !isLoadingNextPage else { return }
@@ -246,16 +238,10 @@ final class FinanceViewModel: ObservableObject {
         isChartLoading = true
 
         chartLoadingTask = Task { [weak self] in
-            do {
-                guard let self else { return }
-                try await Task.sleep(nanoseconds: self.chartLoadingDelayNanoseconds)
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    self.isChartLoading = false
-                }
-            } catch {
-                return
-            }
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: self.chartLoadingDelayNanoseconds)
+            guard !Task.isCancelled else { return }
+            self.isChartLoading = false
         }
     }
 }

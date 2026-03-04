@@ -40,11 +40,7 @@ struct FinanceSkeletonView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(
-                    Color.cardBackground.opacity(0.35),
-                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                )
-                .appGlassSurface(cornerRadius: 12)
+                .cardSurface(cornerRadius: 12)
             }
         }
     }
@@ -75,11 +71,7 @@ struct FinanceSkeletonView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(
-            Color.cardBackground.opacity(0.35),
-            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-        )
-        .appGlassSurface(cornerRadius: 16)
+        .cardSurface(cornerRadius: 16)
     }
 
     private var transactionsSkeleton: some View {
@@ -101,11 +93,7 @@ struct FinanceSkeletonView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(
-            Color.cardBackground.opacity(0.35),
-            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-        )
-        .appGlassSurface(cornerRadius: 12)
+        .cardSurface(cornerRadius: 12)
     }
 }
 

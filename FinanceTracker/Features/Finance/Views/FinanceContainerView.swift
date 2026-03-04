@@ -67,6 +67,7 @@ struct FinanceContainerView: View {
         }
         .padding(.trailing, 20)
         .padding(.bottom, 20)
+        .accessibilityLabel("Add transaction")
     }
 
     private var currencyMenu: some View {

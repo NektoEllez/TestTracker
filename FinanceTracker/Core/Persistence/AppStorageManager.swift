@@ -15,6 +15,8 @@ final class AppStorageManager {
         static let onboardingCompleted = "onboarding_completed"
         static let lastWebViewURL = "last_webview_url"
         static let selectedCurrencyCode = "selected_currency_code"
+        static let selectedWebLanguageCode = "selected_web_language_code"
+        static let preferredColorScheme = "preferred_color_scheme"
     }
 
     // MARK: - Onboarding
@@ -41,5 +43,17 @@ final class AppStorageManager {
     var selectedCurrencyCode: String {
         get { defaults.string(forKey: Keys.selectedCurrencyCode) ?? "USD" }
         set { defaults.set(newValue, forKey: Keys.selectedCurrencyCode) }
+    }
+
+    // MARK: - WebView Language
+
+    var selectedWebLanguageCode: String {
+        get { defaults.string(forKey: Keys.selectedWebLanguageCode) ?? "en" }
+        set { defaults.set(newValue, forKey: Keys.selectedWebLanguageCode) }
+    }
+
+    var preferredColorSchemeRaw: String {
+        get { defaults.string(forKey: Keys.preferredColorScheme) ?? "system" }
+        set { defaults.set(newValue, forKey: Keys.preferredColorScheme) }
     }
 }

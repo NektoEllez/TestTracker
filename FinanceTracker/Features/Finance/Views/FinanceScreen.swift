@@ -186,14 +186,3 @@ struct FinanceScreen: View {
     FinanceScreen(viewModel: .preview)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
-
-private extension View {
-    func cardSurface(cornerRadius: CGFloat) -> some View {
-        self
-            .background(
-                Color.cardBackground.opacity(0.35),
-                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            )
-            .appGlassSurface(cornerRadius: cornerRadius)
-    }
-}

@@ -1,12 +1,18 @@
 import SwiftUI
+import UIKit
 
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = AddTransactionViewModel()
     @State private var saveErrorMessage: String?
-    @State private var isShowingSaveError = false
+    @FocusState private var focusedField: InputField?
 
     let onSave: (Transaction) throws -> Void
+
+    private enum InputField: Hashable {
+        case amount
+        case note
+    }
 
     var body: some View {
         NavigationView {
@@ -22,7 +28,7 @@ struct AddTransactionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") { dismissForm() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") { saveTransaction() }
@@ -31,8 +37,11 @@ struct AddTransactionView: View {
                 }
             }
         }
-        .alert("Unable to Save", isPresented: $isShowingSaveError) {
-            Button("OK", role: .cancel) {}
+        .alert("Unable to Save", isPresented: Binding(
+            get: { saveErrorMessage != nil },
+            set: { if !$0 { saveErrorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { saveErrorMessage = nil }
         } message: {
             Text(saveErrorMessage ?? "Please try again.")
         }
@@ -61,6 +70,7 @@ struct AddTransactionView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled(true)
                 .font(.title2)
+                .focused($focusedField, equals: .amount)
 
             Text("Currency: \(viewModel.selectedCurrencyCode)")
                 .font(.caption)
@@ -130,6 +140,9 @@ struct AddTransactionView: View {
             Haptics.selection()
             viewModel.selectedCategory = category
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(category.displayName)
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
 
     private var dateSection: some View {
@@ -142,6 +155,9 @@ struct AddTransactionView: View {
     private var noteSection: some View {
         Section(header: Text("Note (optional)")) {
             TextField("Add a note...", text: $viewModel.note)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled(true)
+                .focused($focusedField, equals: .note)
 
             HStack {
                 Spacer()
@@ -155,14 +171,25 @@ struct AddTransactionView: View {
     // MARK: - Actions
 
     private func saveTransaction() {
+        focusedField = nil
+        dismissKeyboard()
         guard let transaction = viewModel.buildTransaction() else { return }
         do {
             try onSave(transaction)
             dismiss()
         } catch {
             saveErrorMessage = error.localizedDescription
-            isShowingSaveError = true
         }
+    }
+
+    private func dismissForm() {
+        focusedField = nil
+        dismissKeyboard()
+        dismiss()
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 

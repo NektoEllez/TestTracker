@@ -6,6 +6,16 @@ enum AppGlassStyle {
 }
 
 extension View {
+    /// Card background + glass border — shared across Finance views and skeletons.
+    func cardSurface(cornerRadius: CGFloat) -> some View {
+        self
+            .background(
+                Color.cardBackground.opacity(0.35),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+            .appGlassSurface(cornerRadius: cornerRadius)
+    }
+
     @ViewBuilder
     func appGlassSurface(cornerRadius: CGFloat = 16, style: AppGlassStyle = .regular) -> some View {
         if #available(iOS 26, *) {

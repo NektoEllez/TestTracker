@@ -5,7 +5,7 @@ import Combine
 final class AddTransactionViewModel: ObservableObject {
     @Published var amountText: String = "" {
         didSet {
-            normalizeAmountInput()
+            validateAmountInput()
         }
     }
     @Published var selectedType: TransactionType = .expense
@@ -21,7 +21,6 @@ final class AddTransactionViewModel: ObservableObject {
 
     let noteLimit = 120
 
-    private var isNormalizingAmount = false
     private let storageManager: AppStorageManager
 
     init(storageManager: AppStorageManager) {
@@ -85,17 +84,7 @@ final class AddTransactionViewModel: ObservableObject {
         return amountErrorMessage == nil
     }
 
-    private func normalizeAmountInput() {
-        guard !isNormalizingAmount else { return }
-
-        let sanitized = AmountInputValidator.sanitize(amountText)
-        if sanitized != amountText {
-            isNormalizingAmount = true
-            amountText = sanitized
-            isNormalizingAmount = false
-            return
-        }
-
+    private func validateAmountInput() {
         if amountText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             amountErrorMessage = nil
             return

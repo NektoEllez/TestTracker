@@ -157,7 +157,8 @@ private struct DGDonutChartRepresentable: UIViewRepresentable {
             }
 
             guard attempt < 8 else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self, weak chartView] in
+            Task { @MainActor [weak self, weak chartView] in
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 guard let self, let chartView else { return }
                 self.animateWhenReady(
                     chartView: chartView,

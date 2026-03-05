@@ -4,8 +4,9 @@ import UIKit
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
-    @StateObject private var viewModel = AddTransactionViewModel()
+    @StateObject private var viewModel: AddTransactionViewModel
     @State private var saveErrorMessage: String?
+    @State private var animatedCategory: TransactionCategory?
     @FocusState private var focusedField: InputField?
     
     let onSave: (Transaction) throws -> Void
@@ -14,38 +15,69 @@ struct AddTransactionView: View {
         case amount
         case note
     }
+
+    @MainActor
+    init(
+        storageManager: AppStorageManager? = nil,
+        onSave: @escaping (Transaction) throws -> Void
+    ) {
+        let resolvedStorageManager = storageManager ?? .shared
+        _viewModel = StateObject(
+            wrappedValue: AddTransactionViewModel(storageManager: resolvedStorageManager)
+        )
+        self.onSave = onSave
+    }
     
     var body: some View {
-        NavigationView {
-            Form {
-                typeSection
-                amountSection
-                currencySection
-                categorySection
-                dateSection
-                noteSection
+        navigationContainer
+            .alert("unable_to_save", isPresented: Binding(
+                get: { saveErrorMessage != nil },
+                set: { if !$0 { saveErrorMessage = nil } }
+            )) {
+                Button("ok", role: .cancel) {
+                    Haptics.selection()
+                    saveErrorMessage = nil
+                }
+            } message: {
+                Text(saveErrorMessage ?? String(localized: "please_try_again"))
             }
-            .navigationTitle("add_transaction_title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("cancel") { dismissForm() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("save") { saveTransaction() }
-                        .font(.body.weight(.semibold))
-                        .disabled(!viewModel.isValid)
-                }
+    }
+
+    @ViewBuilder
+    private var navigationContainer: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                formContent
+            }
+        } else {
+            NavigationView {
+                formContent
             }
         }
-        .alert("unable_to_save", isPresented: Binding(
-            get: { saveErrorMessage != nil },
-            set: { if !$0 { saveErrorMessage = nil } }
-        )) {
-            Button("ok", role: .cancel) { saveErrorMessage = nil }
-        } message: {
-            Text(saveErrorMessage ?? String(localized: "please_try_again"))
+    }
+
+    private var formContent: some View {
+        Form {
+            typeSection
+            amountSection
+            currencySection
+            categorySection
+            dateSection
+            noteSection
         }
+        .navigationTitle("add_transaction_title")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("cancel") { dismissForm() }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("save") { saveTransaction() }
+                    .font(.body.weight(.semibold))
+                    .disabled(!viewModel.isValid)
+            }
+        }
+        .appNavigationBarStyle(background: .clear)
     }
     
     // MARK: - Sections
@@ -56,7 +88,7 @@ struct AddTransactionView: View {
                 Text("expense").tag(TransactionType.expense)
                 Text("income").tag(TransactionType.income)
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .pickerStyle(.segmented)
             .onChange(of: viewModel.selectedType) { _ in
                 Haptics.selection()
                 viewModel.onTypeChanged()
@@ -101,7 +133,7 @@ struct AddTransactionView: View {
                     Text(option.title).tag(option.code)
                 }
             }
-            .pickerStyle(MenuPickerStyle())
+            .pickerStyle(.menu)
             .onChange(of: viewModel.selectedCurrencyCode) { newCode in
                 Haptics.selection()
                 viewModel.setCurrencyCode(newCode)
@@ -124,6 +156,9 @@ struct AddTransactionView: View {
     
     private func categoryCell(_ category: TransactionCategory) -> some View {
         let isSelected = viewModel.selectedCategory == category
+        let isAnimating = animatedCategory == category
+        let categoryTitle = localized(category.localizationKey)
+
         return VStack(spacing: 4) {
             Image(systemName: category.icon)
                 .font(.title3)
@@ -131,25 +166,42 @@ struct AddTransactionView: View {
                 .frame(width: 44, height: 44)
                 .background(isSelected ? category.color : category.color.opacity(0.15))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .scaleEffect(isAnimating ? 1.16 : 1.0)
+                .rotationEffect(.degrees(isAnimating ? -6 : 0))
             
-            Text(Bundle.main.localizedString(for: category.localizationKey, locale: locale))
+            Text(categoryTitle)
                 .font(.caption2)
                 .foregroundColor(isSelected ? .primary : .secondary)
                 .lineLimit(1)
         }
+        .animation(.spring(duration: 0.26, bounce: 0.55), value: isAnimating)
         .onTapGesture {
             Haptics.selection()
+            animatedCategory = nil
+            withAnimation(.spring(duration: 0.26, bounce: 0.55)) {
+                animatedCategory = category
+            }
             viewModel.selectedCategory = category
+
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 180_000_000)
+                if animatedCategory == category {
+                    withAnimation(.spring(duration: 0.24, bounce: 0.35)) {
+                        animatedCategory = nil
+                    }
+                }
+            }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Bundle.main.localizedString(for: category.localizationKey, locale: locale))
+        .accessibilityLabel(categoryTitle)
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
+
     
     private var dateSection: some View {
         Section(header: Text("date")) {
             DatePicker("date", selection: $viewModel.date, displayedComponents: .date)
-                .datePickerStyle(CompactDatePickerStyle())
+                .datePickerStyle(.compact)
         }
     }
     
@@ -172,8 +224,8 @@ struct AddTransactionView: View {
     // MARK: - Actions
     
     private func saveTransaction() {
-        focusedField = nil
-        dismissKeyboard()
+        Haptics.selection()
+        endEditing()
         guard let transaction = viewModel.buildTransaction() else { return }
         do {
             try onSave(transaction)
@@ -184,13 +236,22 @@ struct AddTransactionView: View {
     }
     
     private func dismissForm() {
+        Haptics.selection()
+        endEditing()
+        dismiss()
+    }
+
+    private func endEditing() {
         focusedField = nil
         dismissKeyboard()
-        dismiss()
     }
     
     private func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    private func localized(_ key: String) -> String {
+        Bundle.main.localizedString(for: key, locale: locale)
     }
 }
 

@@ -37,13 +37,8 @@
 	<string>Camera access is required for web content that uses the camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is required for web content that uses audio recording.</string>
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIColorName</key>
-		<string>LaunchBackground</string>
-		<key>UIImageName</key>
-		<string>Logo</string>
-	</dict>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UISupportedInterfaceOrientations</key>

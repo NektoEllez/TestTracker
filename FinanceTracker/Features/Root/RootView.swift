@@ -1,7 +1,19 @@
 import SwiftUI
 
 struct RootView: View {
-    @StateObject private var viewModel = RootViewModel()
+    @StateObject private var viewModel: RootViewModel
+    private let dependencies: AppDependencies
+
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        _viewModel = StateObject(
+            wrappedValue: RootViewModel(
+                configService: dependencies.configService,
+                storageManager: dependencies.storageManager,
+                orientationManager: dependencies.orientationManager
+            )
+        )
+    }
     
     var body: some View {
         ZStack {
@@ -15,7 +27,7 @@ struct RootView: View {
                     })
                     .transition(.opacity)
                 case .finance:
-                    FinanceContainerView()
+                    FinanceContainerView(storageManager: dependencies.storageManager)
                         .transition(.opacity)
                 case .browser(let url):
                     BrowserScreen(
@@ -29,17 +41,12 @@ struct RootView: View {
         .background(Color.appBackgroundGradient.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.4), value: viewModel.appState)
         .task {
-            let initialState = await viewModel.determineModule()
-            let hasSavedDecision = ModuleDecision.load() != nil
-            if !hasSavedDecision {
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
-            }
-            viewModel.appState = initialState
+            await viewModel.send(.appLaunched)
         }
     }
 }
 
 #Preview("Root") {
-    RootView()
+    RootView(dependencies: AppDependencies.makeDefault())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }

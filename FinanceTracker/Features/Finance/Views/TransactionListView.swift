@@ -7,7 +7,6 @@ struct TransactionListView: View {
     let isLoadingNextPage: Bool
     let canLoadMore: Bool
     let paginationErrorMessage: String?
-    let onDelete: (TransactionGroup, IndexSet) -> Void
     let onLoadMore: () -> Void
     let onRetryLoadMore: () -> Void
     
@@ -62,13 +61,17 @@ struct TransactionListView: View {
     }
     
     private func sectionTitle(for date: Date) -> String {
-        if date.isToday { return Bundle.main.localizedString(for: "today", locale: locale) }
-        if date.isYesterday { return Bundle.main.localizedString(for: "yesterday", locale: locale) }
-        var formatter = DateFormatter()
+        if date.isToday { return localized("today") }
+        if date.isYesterday { return localized("yesterday") }
+        let formatter = DateFormatter()
         formatter.locale = locale
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: date)
+    }
+
+    private func localized(_ key: String) -> String {
+        Bundle.main.localizedString(for: key, locale: locale)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -103,7 +106,10 @@ struct TransactionListView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
-                Button("retry", action: onRetryLoadMore)
+                Button("retry") {
+                    Haptics.selection()
+                    onRetryLoadMore()
+                }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
             }
@@ -124,7 +130,6 @@ struct TransactionListView: View {
         isLoadingNextPage: false,
         canLoadMore: false,
         paginationErrorMessage: nil,
-        onDelete: { _, _ in },
         onLoadMore: {},
         onRetryLoadMore: {}
     )
@@ -138,7 +143,6 @@ struct TransactionListView: View {
         isLoadingNextPage: false,
         canLoadMore: true,
         paginationErrorMessage: nil,
-        onDelete: { _, _ in },
         onLoadMore: {},
         onRetryLoadMore: {}
     )

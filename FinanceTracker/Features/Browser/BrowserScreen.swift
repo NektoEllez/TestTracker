@@ -3,30 +3,40 @@ import SwiftUI
 struct BrowserScreen: View {
     @StateObject private var viewModel: BrowserViewModel
     @Environment(\.toastStore) private var toastStore
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) private var systemColorScheme
+    @EnvironmentObject private var themeSettings: ThemeSettings
     @State private var isShowingLanguageSheet = false
     @State private var didTriggerFallback = false
-    @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
     private let isSettingsOverlayEnabled = false
-    
+
     var onFallbackToFinance: (() -> Void)?
 
-    init(initialURL: URL, onFallbackToFinance: (() -> Void)? = nil) {
-        _viewModel = StateObject(wrappedValue: BrowserViewModel(initialURL: initialURL))
+    @MainActor
+    init(
+        initialURL: URL,
+        storageManager: AppStorageManager? = nil,
+        onFallbackToFinance: (() -> Void)? = nil
+    ) {
+        let resolvedStorageManager = storageManager ?? .shared
+        _viewModel = StateObject(
+            wrappedValue: BrowserViewModel(
+                initialURL: initialURL,
+                storageManager: resolvedStorageManager
+            )
+        )
         self.onFallbackToFinance = onFallbackToFinance
     }
-    
+
     var body: some View {
         ZStack {
             BrowserRepresentable(
                 viewModel: viewModel,
-                colorScheme: colorScheme,
+                colorScheme: effectiveColorScheme,
                 onFallbackToFinance: onFallbackToFinance
             )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .ignoresSafeArea()
-            
-            if isSettingsOverlayEnabled, #available(iOS 16.0, *) {
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if isSettingsOverlayEnabled {
                 settingsToolbar
             }
             loadingOverlay
@@ -79,9 +89,9 @@ struct BrowserScreen: View {
                     isShowingLanguageSheet = false
                 }
             )
-            .preferredColorScheme(mappedColorScheme)
+            .preferredColorScheme(themeSettings.colorScheme)
         }
-        .preferredColorScheme(mappedColorScheme)
+        .preferredColorScheme(themeSettings.colorScheme)
     }
 
     private func fallbackToFinanceIfNeeded() {
@@ -90,7 +100,7 @@ struct BrowserScreen: View {
         viewModel.isLoading = false
         onFallbackToFinance?()
     }
-    
+
     private var settingsToolbar: some View {
         VStack {
             HStack {
@@ -114,19 +124,19 @@ struct BrowserScreen: View {
                 }
                 .padding(.leading, 12)
                 .padding(.top, 8)
-                
+
                 Spacer()
             }
             Spacer()
         }
     }
-    
+
     @ViewBuilder
     private var loadingOverlay: some View {
         if viewModel.isLoading {
             ZStack {
                 Color.black.opacity(0.08)
-                
+
                 VStack(spacing: 10) {
                     DotArcLoaderView(size: 70, dotSize: 14)
                     Text("Loading...")
@@ -145,96 +155,101 @@ struct BrowserScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
     }
-    
-    private var mappedColorScheme: ColorScheme? {
-        switch preferredColorSchemeRaw {
-            case "light":
-                return .light
-            case "dark":
-                return .dark
-            default:
-                return nil
-        }
+
+    private var effectiveColorScheme: ColorScheme {
+        themeSettings.colorScheme ?? systemColorScheme
     }
 }
 
 private struct ContentLanguagePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeSettings: ThemeSettings
     let selectedCode: String
     let onSelect: (String) -> Void
-    @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
     @State private var pendingSelectionCode: String?
-    
+
     var body: some View {
         NavigationView {
-            List {
-                Section("Appearance") {
-                    Picker("Theme", selection: $preferredColorSchemeRaw) {
-                        Text("System").tag("system")
-                        Text("Light").tag("light")
-                        Text("Dark").tag("dark")
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: preferredColorSchemeRaw) { newValue in
-                        AppearanceManager.apply(rawValue: newValue)
-                    }
-                }
-                
-                Section("Language") {
-                    ForEach(ContentLanguageCatalog.supported) { option in
-                        Button {
-                            let tappedCode = option.code
-                            pendingSelectionCode = tappedCode
-                            Haptics.selection()
-                            Task { @MainActor in
-                                try? await Task.sleep(nanoseconds: 80_000_000)
-                                onSelect(tappedCode)
-                            }
-                        } label: {
-                            let isSelected = effectiveSelectedCode == option.code
-                            HStack(spacing: 12) {
-                                Text(option.flag)
-                                    .font(.title3)
-                                Text(option.shortLabel)
-                                    .font(.title3.weight(.medium))
-                                    .foregroundColor(.primary)
-                                Spacer()
-                                if isSelected {
-                                    Circle()
-                                        .fill(Color.green)
-                                        .frame(width: 11, height: 11)
-                                }
-                            }
-                            .padding(.vertical, 10)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .listRowBackground(
-                            (effectiveSelectedCode == option.code)
-                            ? Color.primary.opacity(0.14)
-                            : Color.clear
-                        )
-                    }
-                }
-            }
+            List { pickerContent }
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
+            .toolbar { closeToolbarItem }
+            .appNavigationBarStyle()
+        }
+    }
+
+    @ViewBuilder
+    private var pickerContent: some View {
+        appearanceSection
+        languageSection
+    }
+
+    private var appearanceSection: some View {
+        Section("Appearance") {
+            Picker("Theme", selection: themeSettings.modeBinding) {
+                Text("System").tag(ThemeMode.system)
+                Text("Light").tag(ThemeMode.light)
+                Text("Dark").tag(ThemeMode.dark)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text("Close")
-                    }
-                }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    private var languageSection: some View {
+        Section("Language") {
+            ForEach(ContentLanguageCatalog.supported) { option in
+                languageRow(option)
             }
         }
     }
-    
+
+    private func languageRow(_ option: ContentLanguageOption) -> some View {
+        Button {
+            let tappedCode = option.code
+            pendingSelectionCode = tappedCode
+            Haptics.selection()
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 80_000_000)
+                onSelect(tappedCode)
+            }
+        } label: {
+            let isSelected = effectiveSelectedCode == option.code
+            HStack(spacing: 12) {
+                Text(option.flag)
+                    .font(.title3)
+                Text(option.shortLabel)
+                    .font(.title3.weight(.medium))
+                    .foregroundColor(.primary)
+                Spacer()
+                if isSelected {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 11, height: 11)
+                }
+            }
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .listRowBackground(
+            (effectiveSelectedCode == option.code)
+            ? Color.primary.opacity(0.14)
+            : Color.clear
+        )
+    }
+
+    private var closeToolbarItem: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+                Haptics.selection()
+                dismiss()
+            } label: {
+                Text("Close")
+            }
+        }
+    }
+
     private var effectiveSelectedCode: String {
         pendingSelectionCode ?? selectedCode
     }

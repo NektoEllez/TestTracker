@@ -18,39 +18,34 @@ struct FinanceAnalyticsScreen: View {
         .background(Color.appBackgroundGradient.ignoresSafeArea())
         .navigationTitle("analytics")
         .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarStyle()
     }
 
     private var summarySection: some View {
         VStack(spacing: 12) {
-            sectionHeader(String(localized: "overview"))
+            sectionHeader(localized("overview"))
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 12)], spacing: 12) {
                 analyticsCard(
-                    title: String(localized: "average_income"),
-                    value: averageAmount(for: .income).formattedCurrency(
-                        code: viewModel.selectedCurrencyCode,
-                        maximumFractionDigits: 0
-                    ),
+                    title: localized("average_income"),
+                    value: formattedAmount(averageAmount(for: .income)),
                     icon: "arrow.down.circle.fill",
                     tint: .appGreen
                 )
                 analyticsCard(
-                    title: String(localized: "average_expense"),
-                    value: averageAmount(for: .expense).formattedCurrency(
-                        code: viewModel.selectedCurrencyCode,
-                        maximumFractionDigits: 0
-                    ),
+                    title: localized("average_expense"),
+                    value: formattedAmount(averageAmount(for: .expense)),
                     icon: "arrow.up.circle.fill",
                     tint: .appRed
                 )
                 analyticsCard(
-                    title: String(localized: "operations"),
+                    title: localized("operations"),
                     value: "\(viewModel.transactions.count)",
                     icon: "list.bullet.rectangle",
                     tint: .appBlue
                 )
                 analyticsCard(
-                    title: String(localized: "savings_rate"),
+                    title: localized("savings_rate"),
                     value: String(format: "%.1f%%", savingsRate * 100),
                     icon: "chart.line.uptrend.xyaxis.circle.fill",
                     tint: .appAccent
@@ -61,7 +56,7 @@ struct FinanceAnalyticsScreen: View {
 
     private var dailyFlowSection: some View {
         VStack(spacing: 12) {
-            sectionHeader(String(localized: "daily_net_flow"))
+            sectionHeader(localized("daily_net_flow"))
 
             VStack(spacing: 10) {
                 ForEach(recentFlows) { flow in
@@ -75,7 +70,7 @@ struct FinanceAnalyticsScreen: View {
 
     private var categoriesSection: some View {
         VStack(spacing: 12) {
-            sectionHeader(String(localized: "top_expense_categories"))
+            sectionHeader(localized("top_expense_categories"))
 
             let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory, locale: locale)
 
@@ -149,10 +144,7 @@ struct FinanceAnalyticsScreen: View {
             .frame(height: 14)
 
             Text(
-                flow.net.formattedCurrency(
-                    code: viewModel.selectedCurrencyCode,
-                    maximumFractionDigits: 0
-                )
+                formattedAmount(flow.net)
             )
             .font(.caption.weight(.semibold))
             .monospacedDigit()
@@ -173,7 +165,7 @@ struct FinanceAnalyticsScreen: View {
                 .fill(segment.color)
                 .frame(width: 10, height: 10)
 
-            Text(Bundle.main.localizedString(for: segment.category.localizationKey, locale: locale))
+            Text(localized(segment.category.localizationKey))
                 .font(.subheadline)
                 .foregroundColor(.primary)
                 .lineLimit(1)
@@ -186,10 +178,7 @@ struct FinanceAnalyticsScreen: View {
                 .frame(width: 56, alignment: .trailing)
 
             Text(
-                segment.amount.formattedCurrency(
-                    code: viewModel.selectedCurrencyCode,
-                    maximumFractionDigits: 0
-                )
+                formattedAmount(segment.amount)
             )
             .font(.subheadline.weight(.semibold))
             .foregroundColor(.primary)
@@ -204,6 +193,18 @@ struct FinanceAnalyticsScreen: View {
         Text(title)
             .font(.headline)
             .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func localized(_ key: String) -> String {
+        Bundle.main.localizedString(for: key, locale: locale)
+    }
+
+    private func formattedAmount(_ amount: Decimal) -> String {
+        amount.formattedCurrency(code: viewModel.selectedCurrencyCode, maximumFractionDigits: 0)
+    }
+
+    private func formattedAmount(_ amount: Double) -> String {
+        amount.formattedCurrency(code: viewModel.selectedCurrencyCode, maximumFractionDigits: 0)
     }
 
     private func averageAmount(for type: TransactionType) -> Decimal {

@@ -5,7 +5,10 @@ struct ToastView: View {
     let onDismiss: () -> Void
     
     var body: some View {
-        Button(action: onDismiss) {
+        Button {
+            Haptics.selection()
+            onDismiss()
+        } label: {
             HStack(spacing: 12) {
                 if let icon = message.icon {
                     Image(systemName: icon)

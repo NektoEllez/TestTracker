@@ -38,6 +38,7 @@ struct OnboardingView: View {
     
     private var skipButton: some View {
         Button("skip") {
+            Haptics.selection()
             onComplete()
         }
         .font(.body)
@@ -48,6 +49,7 @@ struct OnboardingView: View {
     private var nextButton: some View {
         if currentPage < pages.count - 1 {
             Button("next") {
+                Haptics.selection()
                 withAnimation {
                     currentPage += 1
                 }
@@ -56,6 +58,7 @@ struct OnboardingView: View {
             .foregroundColor(.appAccent)
         } else {
             Button("get_started") {
+                Haptics.impact(.light)
                 onComplete()
             }
             .font(.body.weight(.semibold))

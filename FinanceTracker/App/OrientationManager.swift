@@ -3,22 +3,20 @@ import UIKit
 @MainActor
 final class OrientationManager {
     static let shared = OrientationManager()
-    
+
     var orientationLock: UIInterfaceOrientationMask = .portrait
-    
+
+    /// Injected by the app at startup via `PlatformResolver`.
+    var orientationProvider: (any OrientationProviding)?
+
     private init() {}
-    
+
     func lockPortrait() {
         orientationLock = .portrait
-        if #available(iOS 16.0, *) {
-            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-            windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
-        } else {
-            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-        }
+        orientationProvider?.lockPortrait()
         UINavigationController.attemptRotationToDeviceOrientation()
     }
-    
+
     func unlockAll() {
         orientationLock = .allButUpsideDown
     }

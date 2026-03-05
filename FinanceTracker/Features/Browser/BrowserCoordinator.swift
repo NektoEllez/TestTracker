@@ -48,6 +48,18 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
     
     func cleanup() {
+        refreshControl?.removeTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
+        refreshControl = nil
+
+        browser?.navigationDelegate = nil
+        browser?.uiDelegate = nil
+        if let backSwipeGesture {
+            browser?.removeGestureRecognizer(backSwipeGesture)
+        }
+        if let forwardSwipeGesture {
+            browser?.removeGestureRecognizer(forwardSwipeGesture)
+        }
+
         progressObservation = nil
         browser = nil
     }

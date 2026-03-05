@@ -4,32 +4,82 @@ struct FinanceScreen: View {
     @ObservedObject var viewModel: FinanceViewModel
     @Environment(\.toastStore) private var toastStore
     @Environment(\.locale) private var locale
+    @State private var contentOffsetY: CGFloat = 0
+    let onScrollOffsetChange: ((CGFloat) -> Void)?
+
+    init(
+        viewModel: FinanceViewModel,
+        onScrollOffsetChange: ((CGFloat) -> Void)? = nil
+    ) {
+        self.viewModel = viewModel
+        self.onScrollOffsetChange = onScrollOffsetChange
+    }
     
     var body: some View {
-        DotRefreshScrollView(onRefresh: {
-            await viewModel.refreshWithFakeDelay()
-        }) {
+        if #available(iOS 26.0, *) {
+            modernBody
+        } else {
+            legacyBody
+        }
+    }
+
+    private var modernBody: some View {
+        ScrollView {
             contentBody
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.clear)
+        .refreshable {
+            await viewModel.refreshWithFakeDelay()
+        }
+        .scrollEdgeWithBottomBar()
+        .scrollReader()
+        .onPreferenceChange(OffsetPreferenceKey.self) { value in
+            contentOffsetY = value
+            onScrollOffsetChange?(value)
+        }
+        .screenContainerStyle()
         .onChange(of: viewModel.contentErrorMessage) { newValue in
-            guard let message = newValue else { return }
-            toastStore?.show(
-                ToastMessage(text: message, icon: "xmark.octagon.fill", style: .error)
+            showToastIfNeeded(
+                newValue,
+                icon: FinanceScreenDesignTokens.Toast.contentErrorIcon,
+                style: .error
             )
         }
         .onChange(of: viewModel.paginationErrorMessage) { newValue in
-            guard let message = newValue else { return }
-            toastStore?.show(
-                ToastMessage(text: message, icon: "exclamationmark.triangle.fill", style: .warning)
+            showToastIfNeeded(
+                newValue,
+                icon: FinanceScreenDesignTokens.Toast.paginationErrorIcon,
+                style: .warning
+            )
+        }
+    }
+
+    private var legacyBody: some View {
+        DotRefreshScrollView {
+            await viewModel.refreshWithFakeDelay()
+        } content: {
+            contentBody
+        }
+        .scrollEdgeWithBottomBar()
+        .screenContainerStyle()
+        .onChange(of: viewModel.contentErrorMessage) { newValue in
+            showToastIfNeeded(
+                newValue,
+                icon: FinanceScreenDesignTokens.Toast.contentErrorIcon,
+                style: .error
+            )
+        }
+        .onChange(of: viewModel.paginationErrorMessage) { newValue in
+            showToastIfNeeded(
+                newValue,
+                icon: FinanceScreenDesignTokens.Toast.paginationErrorIcon,
+                style: .warning
             )
         }
     }
     
     @ViewBuilder
     private var contentBody: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: FinanceScreenDesignTokens.Layout.contentSpacing) {
             if shouldShowGlobalLoader {
                 FinanceSkeletonView(showTopLoader: !viewModel.isPullToRefreshing)
             } else {
@@ -38,16 +88,25 @@ struct FinanceScreen: View {
                 transactionsSection
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
-        .padding(.bottom, 120)
+        .padding(.horizontal, FinanceScreenDesignTokens.Layout.horizontalPadding)
+        .padding(.top, FinanceScreenDesignTokens.Layout.topPadding)
+        .padding(.bottom, bottomContentPadding)
+    }
+
+    private var bottomContentPadding: CGFloat {
+        if #available(iOS 26.0, *) {
+            return FinanceScreenDesignTokens.Layout.bottomPaddingModern
+        }
+        return FinanceScreenDesignTokens.Layout.bottomPaddingLegacy
     }
     
     private var shouldShowGlobalLoader: Bool {
         viewModel.isPullToRefreshing || viewModel.isLoadingContent || viewModel.isChartLoading
     }
     
+    @ViewBuilder
     private var summarySection: some View {
+        Spacer(minLength: FinanceScreenDesignTokens.Layout.summaryTopSpacer)
         SummaryCardsView(
             income: viewModel.totalIncome,
             expenses: viewModel.totalExpenses,
@@ -59,79 +118,66 @@ struct FinanceScreen: View {
     @ViewBuilder
     private var chartSection: some View {
         if viewModel.isChartLoading || !viewModel.expenseByCategory.isEmpty {
-            VStack(spacing: 12) {
-                sectionHeader(Bundle.main.localizedString(for: "expense_breakdown", locale: locale))
+            VStack(spacing: FinanceScreenDesignTokens.Section.chartTitleSpacing) {
+                sectionHeader(localized(FinanceScreenDesignTokens.Localization.expenseBreakdownKey))
                 
                 let segments = [ChartSegment].from(categoryAmounts: viewModel.expenseByCategory, locale: locale)
                 chartContent(segments, isLoading: viewModel.isChartLoading)
-                    .cardSurface(cornerRadius: 16)
+                    .cardSurface(cornerRadius: FinanceScreenDesignTokens.Chart.cardCornerRadius)
             }
         }
     }
     
     private func chartContent(_ segments: [ChartSegment], isLoading: Bool) -> some View {
         GeometryReader { proxy in
-            let isCompact = proxy.size.width < 520
+            let isCompact = proxy.size.width < FinanceScreenDesignTokens.Chart.compactThreshold
             
             Group {
                 if isLoading {
-                    LoadingIndicatorView(message: Bundle.main.localizedString(for: "loading_chart", locale: locale))
+                    LoadingIndicatorView(message: localized(FinanceScreenDesignTokens.Localization.loadingChartKey))
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 } else if isCompact {
-                    VStack(spacing: 16) {
-                        DonutChartView(
-                            segments: segments,
-                            centerText: viewModel.totalExpenses.formattedCurrency(
-                                code: viewModel.selectedCurrencyCode,
-                                maximumFractionDigits: 0
-                            ),
-                            centerSubtext: Bundle.main.localizedString(for: "total", locale: locale),
-                            isLoading: false
-                        )
-                        .frame(maxWidth: 300)
+                    VStack(spacing: FinanceScreenDesignTokens.Chart.compactSpacing) {
+                        donutChart(segments)
+                            .frame(maxWidth: FinanceScreenDesignTokens.Chart.compactMaxWidth)
                         .frame(maxWidth: .infinity, alignment: .center)
                         
-                        ChartLegendView(
-                            segments: segments,
-                            currencyCode: viewModel.selectedCurrencyCode
-                        )
+                        chartLegend(segments)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
-                    HStack(alignment: .top, spacing: 20) {
-                        DonutChartView(
-                            segments: segments,
-                            centerText: viewModel.totalExpenses.formattedCurrency(
-                                code: viewModel.selectedCurrencyCode,
-                                maximumFractionDigits: 0
-                            ),
-                            centerSubtext: Bundle.main.localizedString(for: "total", locale: locale),
-                            isLoading: false
-                        )
-                        .frame(width: min(340, proxy.size.width * 0.5))
+                    HStack(alignment: .top, spacing: FinanceScreenDesignTokens.Chart.regularSpacing) {
+                        donutChart(segments)
+                            .frame(
+                                width: min(
+                                    FinanceScreenDesignTokens.Chart.regularMaxWidth,
+                                    proxy.size.width * FinanceScreenDesignTokens.Chart.regularWidthRatio
+                                )
+                            )
                         
-                        ChartLegendView(
-                            segments: segments,
-                            currencyCode: viewModel.selectedCurrencyCode
-                        )
+                        chartLegend(segments)
                         .frame(maxWidth: .infinity)
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(height: segments.isEmpty ? 230 : 320)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
+        .frame(
+            height: segments.isEmpty
+            ? FinanceScreenDesignTokens.Chart.emptyHeight
+            : FinanceScreenDesignTokens.Chart.filledHeight
+        )
+        .padding(.horizontal, FinanceScreenDesignTokens.Chart.innerHorizontalPadding)
+        .padding(.vertical, FinanceScreenDesignTokens.Chart.innerVerticalPadding)
     }
     
     private var transactionsSection: some View {
-        VStack(spacing: 8) {
-            sectionHeader(Bundle.main.localizedString(for: "transactions", locale: locale))
+        VStack(spacing: FinanceScreenDesignTokens.Section.transactionsTitleSpacing) {
+            sectionHeader(localized(FinanceScreenDesignTokens.Localization.transactionsKey))
             
             if let contentErrorMessage = viewModel.contentErrorMessage {
                 transactionsErrorState(message: contentErrorMessage)
-                    .cardSurface(cornerRadius: 12)
+                    .cardSurface(cornerRadius: FinanceScreenDesignTokens.Transactions.cardCornerRadius)
             } else {
                 TransactionListView(
                     groups: viewModel.groupedTransactions,
@@ -139,9 +185,6 @@ struct FinanceScreen: View {
                     isLoadingNextPage: viewModel.isLoadingNextPage,
                     canLoadMore: viewModel.canLoadMoreTransactions,
                     paginationErrorMessage: viewModel.paginationErrorMessage,
-                    onDelete: { group, offsets in
-                        viewModel.deleteTransactions(in: group, at: offsets)
-                    },
                     onLoadMore: {
                         viewModel.loadNextPageIfNeeded()
                     },
@@ -149,7 +192,7 @@ struct FinanceScreen: View {
                         viewModel.retryLoadNextPage()
                     }
                 )
-                .cardSurface(cornerRadius: 12)
+                .cardSurface(cornerRadius: FinanceScreenDesignTokens.Transactions.cardCornerRadius)
             }
         }
     }
@@ -159,10 +202,38 @@ struct FinanceScreen: View {
             .font(.headline)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    private func localized(_ key: String) -> String {
+        Bundle.main.localizedString(for: key, locale: locale)
+    }
+
+    private func showToastIfNeeded(_ message: String?, icon: String, style: ToastStyle) {
+        guard let message else { return }
+        toastStore?.show(ToastMessage(text: message, icon: icon, style: style))
+    }
+
+    private func donutChart(_ segments: [ChartSegment]) -> some View {
+        DonutChartView(
+            segments: segments,
+            centerText: viewModel.totalExpenses.formattedCurrency(
+                code: viewModel.selectedCurrencyCode,
+                maximumFractionDigits: 0
+            ),
+            centerSubtext: localized(FinanceScreenDesignTokens.Localization.totalKey),
+            isLoading: false
+        )
+    }
+
+    private func chartLegend(_ segments: [ChartSegment]) -> some View {
+        ChartLegendView(
+            segments: segments,
+            currencyCode: viewModel.selectedCurrencyCode
+        )
+    }
     
     private func transactionsErrorState(message: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle")
+        VStack(spacing: FinanceScreenDesignTokens.ErrorState.verticalSpacing) {
+            Image(systemName: FinanceScreenDesignTokens.ErrorState.iconName)
                 .font(.title3)
                 .foregroundColor(.orange)
             
@@ -171,15 +242,25 @@ struct FinanceScreen: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("retry") {
+            Button(FinanceScreenDesignTokens.ErrorState.retryKey) {
+                Haptics.selection()
                 viewModel.retryLoadingContent()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
         }
-        .padding(.vertical, 24)
-        .padding(.horizontal, 16)
+        .padding(.vertical, FinanceScreenDesignTokens.ErrorState.verticalPadding)
+        .padding(.horizontal, FinanceScreenDesignTokens.ErrorState.horizontalPadding)
         .frame(maxWidth: .infinity)
+    }
+}
+
+private extension View {
+    func screenContainerStyle() -> some View {
+        self
+            .ignoresSafeArea(.container, edges: [.top, .bottom])
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.clear)
     }
 }
 

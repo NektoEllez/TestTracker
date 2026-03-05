@@ -1,70 +1,132 @@
 import SwiftUI
 
 struct FinanceContainerView: View {
-    @StateObject private var viewModel = FinanceViewModel()
+    @StateObject private var viewModel: FinanceViewModel
     @Environment(\.toastStore) private var toastStore
     @State private var isShowingSettings = false
+    @State private var contentOffsetY: CGFloat = 0
+    private let storageManager: AppStorageManager
+
+    @MainActor
+    init(
+        storageManager: AppStorageManager? = nil,
+        transactionStore: TransactionStoreProtocol? = nil
+    ) {
+        let resolvedStorageManager = storageManager ?? .shared
+        let resolvedTransactionStore = transactionStore ?? TransactionStore()
+        self.storageManager = resolvedStorageManager
+        _viewModel = StateObject(
+            wrappedValue: FinanceViewModel(
+                store: resolvedTransactionStore,
+                storageManager: resolvedStorageManager
+            )
+        )
+    }
 
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .bottomTrailing) {
-                FinanceScreen(viewModel: viewModel)
-                fabButton
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.appBackgroundGradient)
-            .navigationTitle(Text("finance_tracker"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    analyticsLink
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        settingsButton
-                        currencyMenu
-                    }
-                }
-            }
-            .background(TransparentNavigationBarConfigurator())
-        }
+        navigationContainer
         .navigationViewStyle(StackNavigationViewStyle())
         .fullScreenCover(isPresented: $viewModel.showingAddTransaction) {
-            AddTransactionView { transaction in
-                do {
-                    try viewModel.addTransaction(transaction)
-                    toastStore?.show(
-                        ToastMessage(
-                            text: String(localized: "transaction_saved"),
-                            icon: "checkmark.circle.fill",
-                            style: .success
-                        ),
-                        autoDismissAfter: 2
-                    )
-                } catch {
-                    toastStore?.show(
-                        ToastMessage(
-                            text: error.localizedDescription,
-                            icon: "xmark.octagon.fill",
-                            style: .error
-                        )
-                    )
-                    throw error
-                }
-            }
+            addTransactionSheet
         }
         .sheet(isPresented: $isShowingSettings) {
             AppSettingsSheet()
         }
         .onAppear {
-            OrientationManager.shared.lockPortrait()
+            lockPortrait()
         }
     }
-    
+
+    private var navigationContainer: some View {
+        NavigationView {
+            navigationContent
+        }
+    }
+
+    private var navigationContent: some View {
+        contentWithFab
+            .navigationTitle(Text("finance_tracker"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                navigationToolbar
+            }
+            .appNavigationBarStyle(background: .clear)
+    }
+
+    @ViewBuilder
+    private var contentWithFab: some View {
+        if #available(iOS 26.0, *) {
+            FinanceContainerPlatformContentView(
+                viewModel: viewModel,
+                isFabVisible: contentOffsetY > -300,
+                onScrollOffsetChange: { offset in
+                    contentOffsetY = offset
+                },
+                onAddTransaction: showAddTransaction
+            )
+        } else {
+            FinanceContainerPlatformContentView(
+                viewModel: viewModel,
+                isFabVisible: true,
+                onScrollOffsetChange: nil,
+                onAddTransaction: showAddTransaction
+            )
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var navigationToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            analyticsLink 
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            trailingToolbarContent
+        }
+    }
+
+    private var trailingToolbarContent: some View {
+        HStack(spacing: 12) {
+            settingsButton
+            currencyMenu
+        }
+    }
+
+    private var addTransactionSheet: some View {
+        AddTransactionView(storageManager: storageManager) { transaction in
+            try handleAddTransaction(transaction)
+        }
+    }
+
+    private func lockPortrait() {
+        OrientationManager.shared.lockPortrait()
+    }
+
+    private func handleAddTransaction(_ transaction: Transaction) throws {
+        do {
+            try viewModel.addTransaction(transaction)
+            toastStore?.show(
+                ToastMessage(
+                    text: String(localized: "transaction_saved"),
+                    icon: "checkmark.circle.fill",
+                    style: .success
+                ),
+                autoDismissAfter: 2
+            )
+        } catch {
+            toastStore?.show(
+                ToastMessage(
+                    text: error.localizedDescription,
+                    icon: "xmark.octagon.fill",
+                    style: .error
+                )
+            )
+            throw error
+        }
+    }
+
     private var settingsButton: some View {
         Button {
-            Haptics.impact(.light)
-            isShowingSettings = true
+            showSettings()
         } label: {
             Image(systemName: "gearshape")
                 .font(.subheadline.weight(.semibold))
@@ -72,46 +134,18 @@ struct FinanceContainerView: View {
         .accessibilityLabel("settings")
     }
     
-    private var fabButton: some View {
-        Button {
-            Haptics.impact(.medium)
-            viewModel.showingAddTransaction = true
-        } label: {
-            Image(systemName: "plus")
-                .font(.title2.weight(.semibold))
-                .foregroundColor(.white)
-                .frame(width: 56, height: 56)
-                .background(Color.appAccent.opacity(0.8))
-                .clipShape(Circle())
-                .appGlassSurface(cornerRadius: 28, style: .interactive)
-                .shadow(color: Color.appAccent.opacity(0.4), radius: 8, x: 0, y: 4)
-        }
-        .padding(.trailing, 20)
-        .padding(.bottom, 20)
-        .accessibilityLabel("add_transaction")
-    }
-    
     private var currencyMenu: some View {
         Menu {
-            Picker("currency", selection: Binding(
-                get: { viewModel.selectedCurrencyCode },
-                set: { newValue in
-                    let previousCode = viewModel.selectedCurrencyCode
-                    viewModel.setCurrencyCode(newValue)
-                    guard previousCode != viewModel.selectedCurrencyCode else { return }
-                    Haptics.selection()
-                    toastStore?.show(
-                        ToastMessage(
-                            text: String(format: String(localized: "currency_set_to"), viewModel.selectedCurrencyCode),
-                            icon: "dollarsign.circle.fill",
-                            style: .default
-                        ),
-                        autoDismissAfter: 1.8
-                    )
-                }
-            )) {
-                ForEach(CurrencyCatalog.popular) { option in
-                    Text(option.title).tag(option.code)
+            ForEach(CurrencyCatalog.popular) { option in
+                let isSelected = option.code == viewModel.selectedCurrencyCode
+                Button {
+                    updateCurrency(option.code)
+                } label: {
+                    if isSelected {
+                        Label(option.title, systemImage: "checkmark")
+                    } else {
+                        Text(option.title)
+                    }
                 }
             }
         } label: {
@@ -128,6 +162,31 @@ struct FinanceContainerView: View {
         }
     }
 
+    private func showSettings() {
+        Haptics.impact(.light)
+        isShowingSettings = true
+    }
+
+    private func showAddTransaction() {
+        Haptics.impact(.medium)
+        viewModel.showingAddTransaction = true
+    }
+
+    private func updateCurrency(_ newValue: String) {
+        Haptics.selection()
+        let previousCode = viewModel.selectedCurrencyCode
+        viewModel.setCurrencyCode(newValue)
+        guard previousCode != viewModel.selectedCurrencyCode else { return }
+        toastStore?.show(
+            ToastMessage(
+                text: String(format: String(localized: "currency_set_to"), viewModel.selectedCurrencyCode),
+                icon: "dollarsign.circle.fill",
+                style: .default
+            ),
+            autoDismissAfter: 1.8
+        )
+    }
+
     private var analyticsLink: some View {
         NavigationLink(destination: FinanceAnalyticsScreen(viewModel: viewModel)) {
             Label("analytics", systemImage: "chart.line.uptrend.xyaxis")
@@ -141,6 +200,11 @@ struct FinanceContainerView: View {
                 )
                 .appGlassSurface(cornerRadius: 999, style: .interactive)
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                Haptics.selection()
+            }
+        )
         .accessibilityLabel("analytics")
     }
 }
@@ -150,9 +214,56 @@ struct FinanceContainerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
 }
 
+private struct FinanceContainerPlatformContentView: View {
+    let viewModel: FinanceViewModel
+    let isFabVisible: Bool
+    let onScrollOffsetChange: ((CGFloat) -> Void)?
+    let onAddTransaction: () -> Void
+
+    var body: some View {
+        FinanceScreen(
+            viewModel: viewModel,
+            onScrollOffsetChange: onScrollOffsetChange
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.appBackgroundGradient.ignoresSafeArea())
+        .overlay(alignment: .bottomTrailing) {
+            FinanceFloatingActionButton(
+                isVisible: isFabVisible,
+                action: onAddTransaction
+            )
+        }
+    }
+}
+
+private struct FinanceFloatingActionButton: View {
+    let isVisible: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            Image(systemName: "plus")
+                .font(.title2.weight(.semibold))
+                .foregroundColor(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.appAccent.opacity(0.8))
+                .clipShape(Circle())
+                .appGlassSurface(cornerRadius: 28, style: .interactive)
+                .shadow(color: Color.appAccent.opacity(0.4), radius: 8, x: 0, y: 4)
+        }
+        .accessibilityLabel("add_transaction")
+        .padding(.trailing, 20)
+        .padding(.bottom, 20)
+        .opacity(isVisible ? 1 : 0)
+        .animation(.easeInOut(duration: 0.2), value: isVisible)
+    }
+}
+
 private struct AppSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
+    @ObservedObject private var themeSettings = ThemeSettings.shared
     @AppStorage("selected_content_language_code") private var selectedLanguageCode = "en"
 
     var body: some View {
@@ -161,11 +272,10 @@ private struct AppSettingsSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle(Text("settings"))
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
-            }
             .toolbar { closeToolbarItem }
+            .appNavigationBarStyle()
         }
+        .preferredColorScheme(themeSettings.colorScheme)
     }
 
     @ViewBuilder
@@ -176,17 +286,14 @@ private struct AppSettingsSheet: View {
 
     private var appearanceSection: some View {
         Section(header: Text("appearance")) {
-            Picker(selection: $preferredColorSchemeRaw) {
-                Text("theme_system").tag("system")
-                Text("theme_light").tag("light")
-                Text("theme_dark").tag("dark")
+            Picker(selection: themeSettings.modeBinding) {
+                Text("theme_system").tag(ThemeMode.system)
+                Text("theme_light").tag(ThemeMode.light)
+                Text("theme_dark").tag(ThemeMode.dark)
             } label: {
                 Text("appearance")
             }
             .pickerStyle(.segmented)
-            .onChange(of: preferredColorSchemeRaw) { newValue in
-                AppearanceManager.apply(rawValue: newValue)
-            }
         }
     }
 
@@ -224,43 +331,11 @@ private struct AppSettingsSheet: View {
     private var closeToolbarItem: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
+                Haptics.selection()
                 dismiss()
             } label: {
                 Text("close")
             }
         }
-    }
-}
-
-private struct TransparentNavigationBarConfigurator: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        let navController = uiViewController.navigationController
-        ?? findNavigationController(from: uiViewController.view)
-        
-        guard let navigationController = navController else { return }
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = .clear
-        appearance.shadowColor = .clear
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.compactAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-        navigationController.navigationBar.isTranslucent = true
-    }
-    
-    private func findNavigationController(from view: UIView?) -> UINavigationController? {
-        var responder: UIResponder? = view
-        while let next = responder {
-            if let nav = next as? UINavigationController { return nav }
-            if let vc = next as? UIViewController, let nav = vc.navigationController { return nav }
-            responder = next.next
-        }
-        return nil
     }
 }

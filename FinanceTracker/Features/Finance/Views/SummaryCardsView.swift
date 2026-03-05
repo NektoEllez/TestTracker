@@ -9,9 +9,9 @@ struct SummaryCardsView: View {
     
     private var metrics: [SummaryMetric] {
         [
-            SummaryMetric(title: Bundle.main.localizedString(for: "income", locale: locale), amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
-            SummaryMetric(title: Bundle.main.localizedString(for: "expenses", locale: locale), amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
-            SummaryMetric(title: Bundle.main.localizedString(for: "balance", locale: locale), amount: balance, color: .appBlue, icon: "equal.circle.fill")
+            SummaryMetric(title: localized("income"), amount: income, color: .appGreen, icon: "arrow.down.circle.fill"),
+            SummaryMetric(title: localized("expenses"), amount: expenses, color: .appRed, icon: "arrow.up.circle.fill"),
+            SummaryMetric(title: localized("balance"), amount: balance, color: .appBlue, icon: "equal.circle.fill")
         ]
     }
     
@@ -34,6 +34,10 @@ struct SummaryCardsView: View {
                 summaryCard(metric)
             }
         }
+    }
+
+    private func localized(_ key: String) -> String {
+        Bundle.main.localizedString(for: key, locale: locale)
     }
     
     private func summaryCard(_ metric: SummaryMetric) -> some View {

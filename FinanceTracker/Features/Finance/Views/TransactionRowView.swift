@@ -26,7 +26,7 @@ struct TransactionRowView: View {
     
     private var transactionDetails: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(Bundle.main.localizedString(for: transaction.category.localizationKey, locale: locale))
+            Text(localizedCategoryName)
                 .font(.subheadline)
                 .fontWeight(.medium)
             
@@ -50,6 +50,10 @@ struct TransactionRowView: View {
         let prefix = transaction.type == .income ? "+" : "-"
         let formatted = transaction.amount.formattedCurrency(code: currencyCode, maximumFractionDigits: 2)
         return "\(prefix)\(formatted)"
+    }
+
+    private var localizedCategoryName: String {
+        Bundle.main.localizedString(for: transaction.category.localizationKey, locale: locale)
     }
 }
 

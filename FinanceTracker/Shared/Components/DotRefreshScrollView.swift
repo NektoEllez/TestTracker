@@ -20,7 +20,8 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
         let scrollView = UIScrollView()
         scrollView.backgroundColor = .clear
         scrollView.alwaysBounceVertical = true
-        scrollView.contentInsetAdjustmentBehavior = .automatic
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.automaticallyAdjustsScrollIndicatorInsets = false
         
         guard let hostedView = context.coordinator.hostingController.view else {
             return scrollView
@@ -38,7 +39,7 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
             hostedView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             hostedView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         ])
-        
+
         scrollView.refreshControl = context.coordinator.refreshControl
         return scrollView
     }
@@ -53,7 +54,6 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
         var parent: DotRefreshScrollView
         let hostingController: UIHostingController<Content>
         let refreshControl = UIRefreshControl()
-        
         private let loaderHost: UIHostingController<DotArcLoaderView>
         private var refreshTask: Task<Void, Never>?
         private var lastRefreshTime: CFAbsoluteTime = 0
@@ -66,6 +66,13 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
                 rootView: DotArcLoaderView(size: 54, dotSize: 10)
             )
             super.init()
+
+            // Prevent the hosting controller from adding its own safe area
+            // insets to the content — the parent UIScrollView manages insets.
+            if #available(iOS 16.4, *) {
+                hostingController.safeAreaRegions = []
+            }
+
             configureRefreshControl()
         }
         
@@ -91,7 +98,7 @@ struct DotRefreshScrollView<Content: View>: UIViewRepresentable {
                 loaderView.heightAnchor.constraint(equalToConstant: 44)
             ])
         }
-        
+
         @objc
         private func handleRefresh() {
             let now = CFAbsoluteTimeGetCurrent()

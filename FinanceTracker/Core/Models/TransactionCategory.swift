@@ -63,6 +63,7 @@ enum TransactionCategory: String, Codable, CaseIterable, Identifiable {
             case .other: return .gray
         }
     }
+
     
     static var incomeCategories: [TransactionCategory] {
         allCases.filter { $0.transactionType == .income }

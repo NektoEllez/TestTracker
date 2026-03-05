@@ -8,68 +8,96 @@ enum AppState: Equatable, Sendable {
     case browser(URL)
 }
 
+enum RootEvent: Sendable {
+    case appLaunched
+    case onboardingCompleted
+    case browserFallbackToFinance
+}
+
 @MainActor
 class RootViewModel: ObservableObject {
     @Published var appState: AppState = .splash
 
     private let configService: ConfigServiceProtocol
     private let storageManager: AppStorageManager
+    private let orientationManager: OrientationManager
+    private var didBootstrap = false
+    private let firstLaunchSplashDelayNanoseconds: UInt64 = 1_500_000_000
     
     init(
         configService: ConfigServiceProtocol,
-        storageManager: AppStorageManager
+        storageManager: AppStorageManager,
+        orientationManager: OrientationManager
     ) {
         self.configService = configService
         self.storageManager = storageManager
+        self.orientationManager = orientationManager
     }
-    
-    convenience init() {
-        self.init(
-            configService: ConfigService(),
-            storageManager: .shared
-        )
-    }
-    
-    /// Resolves app entry module and persists decision for next launches.
-    /// Flow:
-    /// 1) Use saved `ModuleDecision` when available.
-    /// 2) On first launch, fetch remote config during splash and persist result.
-    /// 3) Any parsing/network error falls back to finance module.
-    func determineModule() async -> AppState {
-        if let saved = ModuleDecision.load() {
-            switch saved {
-                case .finance:
-                    return module1State()
-                case .browser(let url):
-                    OrientationManager.shared.unlockAll()
-                    return .browser(url)
-            }
-        }
-        
-        do {
-            if let url = try await configService.fetchConfig() {
-                ModuleDecision.browser(url).save()
-                OrientationManager.shared.unlockAll()
-                return .browser(url)
-            } else {
-                ModuleDecision.finance.save()
-                return module1State()
-            }
-        } catch {
-            ModuleDecision.finance.save()
-            return module1State()
+
+    func send(_ event: RootEvent) async {
+        switch event {
+        case .appLaunched:
+            await bootstrapIfNeeded()
+        case .onboardingCompleted:
+            storageManager.isOnboardingCompleted = true
+            appState = .finance
+        case .browserFallbackToFinance:
+            ModuleDecision.finance.save(in: storageManager, clearBrowserURL: false)
+            orientationManager.lockPortrait()
+            appState = module1State()
         }
     }
-    
+
     func completeOnboarding() {
-        storageManager.isOnboardingCompleted = true
-        appState = .finance
+        Task { await send(.onboardingCompleted) }
     }
 
     func fallbackToFinance() {
-        ModuleDecision.finance.save(clearBrowserURL: false)
-        OrientationManager.shared.lockPortrait()
-        appState = module1State()
+        Task { await send(.browserFallbackToFinance) }
+    }
+
+    private func bootstrapIfNeeded() async {
+        guard !didBootstrap else { return }
+        didBootstrap = true
+
+        appState = .splash
+        let savedDecision = ModuleDecision.load(from: storageManager)
+        let shouldShowFirstLaunchDelay = savedDecision == nil
+
+        async let resolvedState = resolveInitialState(savedDecision: savedDecision)
+        if shouldShowFirstLaunchDelay {
+            try? await Task.sleep(nanoseconds: firstLaunchSplashDelayNanoseconds)
+        }
+        appState = await resolvedState
+    }
+
+    private func resolveInitialState(savedDecision: ModuleDecision?) async -> AppState {
+        if let savedDecision {
+            return state(for: savedDecision)
+        }
+
+        do {
+            if let url = try await configService.fetchConfig() {
+                ModuleDecision.browser(url).save(in: storageManager)
+                return state(for: .browser(url))
+            }
+            ModuleDecision.finance.save(in: storageManager)
+            return module1State()
+        } catch {
+            ModuleDecision.finance.save(in: storageManager)
+            return module1State()
+        }
+    }
+
+    private func state(for decision: ModuleDecision) -> AppState {
+        switch decision {
+        case .finance:
+            orientationManager.lockPortrait()
+            return module1State()
+        case .browser(let url):
+            orientationManager.unlockAll()
+            return .browser(url)
+        }
     }
 
     private func module1State() -> AppState {

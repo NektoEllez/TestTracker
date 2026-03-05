@@ -4,10 +4,9 @@ enum ModuleDecision: Equatable {
     case finance
     case browser(URL)
     
-    // MARK: - Save / Load (UserDefaults via AppStorageManager)
-    
-    func save(clearBrowserURL: Bool = true) {
-        let storage = AppStorageManager.shared
+    // MARK: - Save / Load
+
+    func save(in storage: AppStorageManager, clearBrowserURL: Bool = true) {
         switch self {
             case .finance:
                 storage.moduleDecisionType = "finance"
@@ -17,9 +16,8 @@ enum ModuleDecision: Equatable {
                 storage.browserConfigURL = url
         }
     }
-    
-    static func load() -> ModuleDecision? {
-        let storage = AppStorageManager.shared
+
+    static func load(from storage: AppStorageManager) -> ModuleDecision? {
         let defaults = UserDefaults.standard
         
         // Migration: old key module_decision_url → browser_config_url
@@ -42,5 +40,15 @@ enum ModuleDecision: Equatable {
             default:
                 return nil
         }
+    }
+
+    // MARK: - Backward Compatible Wrappers
+
+    func save(clearBrowserURL: Bool = true) {
+        save(in: .shared, clearBrowserURL: clearBrowserURL)
+    }
+
+    static func load() -> ModuleDecision? {
+        load(from: .shared)
     }
 }

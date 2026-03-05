@@ -1,39 +1,29 @@
 import SwiftUI
 
+@MainActor
 @main
 struct FinanceTrackerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var toastStore = ToastStore()
-    @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
+    private let dependencies: AppDependencies
     @AppStorage("selected_content_language_code") private var selectedLanguageCode = "en"
-    
+
+    init() {
+        dependencies = AppDependencies.makeDefault()
+    }
+
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(dependencies: dependencies)
+                .environmentObject(dependencies.themeSettings)
                 .environment(\.locale, Locale(identifier: selectedLanguageCode))
                 .id(selectedLanguageCode)
-                .environment(\.toastStore, toastStore)
+                .environment(\.toastStore, dependencies.toastStore)
+                .environment(\.browserAppearanceProvider, dependencies.browserAppearanceProvider)
+                .environment(\.localeProvider, dependencies.localeProvider)
                 .toastOverlay(alignment: .top)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackgroundGradient.ignoresSafeArea())
-                .preferredColorScheme(mappedColorScheme)
-                .onAppear {
-                    AppearanceManager.apply(rawValue: preferredColorSchemeRaw)
-                }
-                .onChange(of: preferredColorSchemeRaw) { newValue in
-                    AppearanceManager.apply(rawValue: newValue)
-                }
-        }
-    }
-    
-    private var mappedColorScheme: ColorScheme? {
-        switch preferredColorSchemeRaw {
-            case "light":
-                return .light
-            case "dark":
-                return .dark
-            default:
-                return nil
+                .preferredColorScheme(dependencies.themeSettings.colorScheme)
         }
     }
 }

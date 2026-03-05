@@ -5,7 +5,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        configureNavigationBarAppearance()
         return true
     }
     
@@ -14,17 +13,5 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         supportedInterfaceOrientationsFor window: UIWindow?
     ) -> UIInterfaceOrientationMask {
         OrientationManager.shared.orientationLock
-    }
-    
-    private func configureNavigationBarAppearance() {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = .clear
-        appearance.shadowColor = .clear
-        
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-        UINavigationBar.appearance().isTranslucent = true
     }
 }

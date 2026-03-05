@@ -14,13 +14,19 @@ class BrowserViewModel: ObservableObject {
     @Published var selectedLanguageCode: String
     
     let initialURL: URL
+    private let storageManager: AppStorageManager
     
-    init(initialURL: URL) {
-        let resolvedLanguageCode = AppStorageManager.shared.effectiveContentLanguageCode
+    init(
+        initialURL: URL,
+        storageManager: AppStorageManager? = nil
+    ) {
+        let resolvedStorageManager = storageManager ?? .shared
+        self.storageManager = resolvedStorageManager
+        let resolvedLanguageCode = resolvedStorageManager.effectiveContentLanguageCode
         self.selectedLanguageCode = resolvedLanguageCode
         self.initialURL = initialURL
         
-        if let last = AppStorageManager.shared.lastBrowserURL {
+        if let last = resolvedStorageManager.lastBrowserURL {
             self.currentURL = last
         } else {
             self.currentURL = BrowserViewModel.applyingLanguage(code: resolvedLanguageCode, to: initialURL)
@@ -28,7 +34,7 @@ class BrowserViewModel: ObservableObject {
     }
     
     func saveCurrentURL() {
-        AppStorageManager.shared.lastBrowserURL = currentURL
+        storageManager.lastBrowserURL = currentURL
     }
     
     func selectLanguage(_ code: String) {

@@ -3,6 +3,7 @@ import SwiftUI
 struct BrowserScreen: View {
     @StateObject private var viewModel: BrowserViewModel
     @Environment(\.toastStore) private var toastStore
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isShowingLanguageSheet = false
     @State private var didTriggerFallback = false
     @AppStorage("preferred_color_scheme") private var preferredColorSchemeRaw = "system"
@@ -17,7 +18,11 @@ struct BrowserScreen: View {
     
     var body: some View {
         ZStack {
-            BrowserRepresentable(viewModel: viewModel, onFallbackToFinance: onFallbackToFinance)
+            BrowserRepresentable(
+                viewModel: viewModel,
+                colorScheme: colorScheme,
+                onFallbackToFinance: onFallbackToFinance
+            )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
             
@@ -27,7 +32,7 @@ struct BrowserScreen: View {
             loadingOverlay
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+        .background(Color(.systemBackground))
         .onAppear {
             OrientationManager.shared.unlockAll()
             viewModel.syncWithSystemLanguage()

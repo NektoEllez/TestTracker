@@ -1,8 +1,10 @@
 import SwiftUI
 import WebKit
+import UIKit
 
 struct BrowserRepresentable: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
+    let colorScheme: ColorScheme
     var onFallbackToFinance: (() -> Void)?
 
     func makeCoordinator() -> BrowserCoordinator {
@@ -23,8 +25,7 @@ struct BrowserRepresentable: UIViewRepresentable {
         browser.scrollView.contentInsetAdjustmentBehavior = .never
         browser.scrollView.automaticallyAdjustsScrollIndicatorInsets = false
         browser.isOpaque = false
-        browser.backgroundColor = .black
-        browser.scrollView.backgroundColor = .black
+        applyAppearance(to: browser)
         
         browser.navigationDelegate = context.coordinator
         browser.uiDelegate = context.coordinator
@@ -47,11 +48,30 @@ struct BrowserRepresentable: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
+        applyAppearance(to: uiView)
         guard uiView.url != viewModel.currentURL else { return }
         uiView.load(URLRequest(url: viewModel.currentURL))
     }
     
     static func dismantleUIView(_ uiView: WKWebView, coordinator: BrowserCoordinator) {
         coordinator.cleanup()
+    }
+
+    private func applyAppearance(to browser: WKWebView) {
+        if #available(iOS 17.0, *) {
+            let style: UIUserInterfaceStyle = colorScheme == .dark ? .dark : .light
+            browser.overrideUserInterfaceStyle = style
+            browser.backgroundColor = .systemBackground
+            browser.scrollView.backgroundColor = .systemBackground
+        } else {
+            let style: UIUserInterfaceStyle = colorScheme == .dark ? .dark : .light
+            browser.overrideUserInterfaceStyle = style
+            browser.backgroundColor = UIColor { trait in
+                trait.userInterfaceStyle == .dark ? .black : .white
+            }
+            browser.scrollView.backgroundColor = UIColor { trait in
+                trait.userInterfaceStyle == .dark ? .black : .white
+            }
+        }
     }
 }

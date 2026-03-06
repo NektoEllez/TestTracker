@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FinanceAnalyticsScreen: View {
-    @ObservedObject var viewModel: FinanceViewModel
+    var viewModel: FinanceViewModel
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -251,7 +251,7 @@ struct FinanceAnalyticsScreen: View {
 }
 
 private struct DayFlow: Identifiable {
-    let id = UUID()
+    var id: Date { date }
     let date: Date
     let income: Decimal
     let expense: Decimal
@@ -262,7 +262,7 @@ private struct DayFlow: Identifiable {
 }
 
 #Preview("Analytics") {
-    NavigationView {
+    AdaptiveNavigationContainer {
         FinanceAnalyticsScreen(viewModel: .preview)
     }
 }

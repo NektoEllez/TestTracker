@@ -3,22 +3,24 @@ import os
 
 final class ConfigService: ConfigServiceProtocol, Sendable {
     private enum Constants {
-        static let configURL = URL(string: "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU")
+        static let defaultConfigURLString = "https://drive.google.com/uc?export=download&id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU"
         static let timeout: TimeInterval = 12
         static let isRemoteConfigEnabled = true
+        static let remoteConfigURLKey = "RemoteConfigURL"
     }
     
     private static let logger = Logger(subsystem: "Legacy.FinanceTracker", category: "ConfigService")
     
     let isRemoteConfigEnabled: Bool = Constants.isRemoteConfigEnabled
-    var hasRemoteConfig: Bool { Constants.configURL != nil }
+    private let configURL: URL?
+    var hasRemoteConfig: Bool { configURL != nil }
     
     init(bundle: Bundle = .main) {
-        _ = bundle
+        self.configURL = Self.loadConfigURL(from: bundle)
     }
     
     func fetchConfig() async throws -> URL? {
-        guard let configURL = Constants.configURL else {
+        guard let configURL else {
             throw ConfigServiceError.unknown("Config URL is unavailable")
         }
 
@@ -48,6 +50,19 @@ final class ConfigService: ConfigServiceProtocol, Sendable {
             Self.logger.error("Config fetch failed: \(wrappedError.localizedDescription, privacy: .public)")
             throw wrappedError
         }
+    }
+
+    private static func loadConfigURL(from bundle: Bundle) -> URL? {
+        let urlString = (bundle.object(
+            forInfoDictionaryKey: Constants.remoteConfigURLKey
+        ) as? String) ?? Constants.defaultConfigURLString
+        guard let url = URL(string: urlString),
+              url.scheme?.lowercased() == "https",
+              url.host != nil else {
+            logger.error("Invalid RemoteConfigURL")
+            return URL(string: Constants.defaultConfigURLString)
+        }
+        return url
     }
 }
 

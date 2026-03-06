@@ -32,7 +32,6 @@ final class ThemeSettings: ObservableObject {
         let storedMode = defaults.string(forKey: storageKey)
         self.mode = ThemeMode(rawValue: storedMode ?? "") ?? .system
     }
-
     /// Call after injecting the appearance provider to apply the persisted theme.
     func applyCurrentTheme() {
         appearanceProvider?.applyTheme(mode)

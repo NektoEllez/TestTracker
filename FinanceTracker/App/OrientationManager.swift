@@ -14,10 +14,22 @@ final class OrientationManager {
     func lockPortrait() {
         orientationLock = .portrait
         orientationProvider?.lockPortrait()
-        UINavigationController.attemptRotationToDeviceOrientation()
+        refreshSupportedOrientations()
     }
 
     func unlockAll() {
         orientationLock = .allButUpsideDown
+        refreshSupportedOrientations()
+    }
+
+    private func refreshSupportedOrientations() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.keyWindow?.rootViewController {
+            if #available(iOS 16.0, *) {
+                rootVC.setNeedsUpdateOfSupportedInterfaceOrientations()
+            } else {
+                UIViewController.attemptRotationToDeviceOrientation()
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@ struct ToastView: View {
                 if let icon = message.icon {
                     Image(systemName: icon)
                         .font(.body.weight(.semibold))
-                        .foregroundColor(iconColor)
+                        .foregroundStyle(iconColor)
                 }
                 
                 Text(message.text)

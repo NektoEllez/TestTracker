@@ -1,29 +1,15 @@
 import Foundation
 
-private enum DateFormatting {
-    static let mediumFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
-    static let shortDayMonthFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "d MMM"
-        return f
-    }()
-}
-
 extension Date {
     
         /// "Mar 4, 2026"
     var mediumFormatted: String {
-        DateFormatting.mediumFormatter.string(from: self)
+        self.formatted(date: .abbreviated, time: .omitted)
     }
     
         /// "4 Mar"
     var shortDayMonth: String {
-        DateFormatting.shortDayMonthFormatter.string(from: self)
+        self.formatted(.dateTime.day().month(.abbreviated))
     }
     
         /// Returns a date with time components stripped (midnight)
@@ -43,8 +29,13 @@ extension Date {
     
         /// Human-readable section header: "Today", "Yesterday", or "Mar 4, 2026"
     var sectionTitle: String {
-        if isToday { return "Today" }
-        if isYesterday { return "Yesterday" }
+        if isToday || isYesterday {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+            formatter.doesRelativeDateFormatting = true
+            return formatter.string(from: self)
+        }
         return mediumFormatted
     }
 }

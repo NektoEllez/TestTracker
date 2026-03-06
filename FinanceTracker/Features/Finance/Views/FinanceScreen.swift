@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct FinanceScreen: View {
-    @ObservedObject var viewModel: FinanceViewModel
+    var viewModel: FinanceViewModel
     @Environment(\.toastStore) private var toastStore
     @Environment(\.locale) private var locale
     @State private var contentOffsetY: CGFloat = 0
     let onScrollOffsetChange: ((CGFloat) -> Void)?
-
+    
     init(
         viewModel: FinanceViewModel,
         onScrollOffsetChange: ((CGFloat) -> Void)? = nil
@@ -22,59 +22,50 @@ struct FinanceScreen: View {
             legacyBody
         }
     }
-
+    
     private var modernBody: some View {
-        ScrollView {
-            contentBody
-        }
-        .refreshable {
-            await viewModel.refreshWithFakeDelay()
-        }
-        .scrollEdgeWithBottomBar()
-        .scrollReader()
-        .onPreferenceChange(OffsetPreferenceKey.self) { value in
-            contentOffsetY = value
-            onScrollOffsetChange?(value)
-        }
-        .screenContainerStyle()
-        .onChange(of: viewModel.contentErrorMessage) { newValue in
-            showToastIfNeeded(
-                newValue,
-                icon: FinanceScreenDesignTokens.Toast.contentErrorIcon,
-                style: .error
-            )
-        }
-        .onChange(of: viewModel.paginationErrorMessage) { newValue in
-            showToastIfNeeded(
-                newValue,
-                icon: FinanceScreenDesignTokens.Toast.paginationErrorIcon,
-                style: .warning
-            )
-        }
+        applySharedScreenModifiers(
+            to: ScrollView {
+                contentBody
+            }
+                .refreshable {
+                    await viewModel.refreshWithFakeDelay()
+                }
+                .onPreferenceChange(OffsetPreferenceKey.self) { value in
+                    contentOffsetY = value
+                    onScrollOffsetChange?(value)
+                }
+        )
     }
-
+    
     private var legacyBody: some View {
-        DotRefreshScrollView {
-            await viewModel.refreshWithFakeDelay()
-        } content: {
-            contentBody
-        }
-        .scrollEdgeWithBottomBar()
-        .screenContainerStyle()
-        .onChange(of: viewModel.contentErrorMessage) { newValue in
-            showToastIfNeeded(
-                newValue,
-                icon: FinanceScreenDesignTokens.Toast.contentErrorIcon,
-                style: .error
-            )
-        }
-        .onChange(of: viewModel.paginationErrorMessage) { newValue in
-            showToastIfNeeded(
-                newValue,
-                icon: FinanceScreenDesignTokens.Toast.paginationErrorIcon,
-                style: .warning
-            )
-        }
+        applySharedScreenModifiers(
+            to: DotRefreshScrollView {
+                await viewModel.refreshWithFakeDelay()
+            } content: {
+                contentBody
+            }
+        )
+    }
+    
+    private func applySharedScreenModifiers<Content: View>(to content: Content) -> some View {
+        content
+            .scrollEdgeWithBottomBar()
+            .screenContainerStyle()
+            .onChange(of: viewModel.contentErrorMessage) { newValue in
+                showToastIfNeeded(
+                    newValue,
+                    icon: FinanceScreenDesignTokens.Toast.contentErrorIcon,
+                    style: .error
+                )
+            }
+            .onChange(of: viewModel.paginationErrorMessage) { newValue in
+                showToastIfNeeded(
+                    newValue,
+                    icon: FinanceScreenDesignTokens.Toast.paginationErrorIcon,
+                    style: .warning
+                )
+            }
     }
     
     @ViewBuilder
@@ -92,7 +83,7 @@ struct FinanceScreen: View {
         .padding(.top, FinanceScreenDesignTokens.Layout.topPadding)
         .padding(.bottom, bottomContentPadding)
     }
-
+    
     private var bottomContentPadding: CGFloat {
         if #available(iOS 26.0, *) {
             return FinanceScreenDesignTokens.Layout.bottomPaddingModern
@@ -140,10 +131,10 @@ struct FinanceScreen: View {
                     VStack(spacing: FinanceScreenDesignTokens.Chart.compactSpacing) {
                         donutChart(segments)
                             .frame(maxWidth: FinanceScreenDesignTokens.Chart.compactMaxWidth)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                            .frame(maxWidth: .infinity, alignment: .center)
                         
                         chartLegend(segments)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
                     HStack(alignment: .top, spacing: FinanceScreenDesignTokens.Chart.regularSpacing) {
@@ -156,7 +147,7 @@ struct FinanceScreen: View {
                             )
                         
                         chartLegend(segments)
-                        .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity)
                     }
                 }
             }
@@ -202,16 +193,16 @@ struct FinanceScreen: View {
             .font(.headline)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private func localized(_ key: String) -> String {
         Bundle.main.localizedString(for: key, locale: locale)
     }
-
+    
     private func showToastIfNeeded(_ message: String?, icon: String, style: ToastStyle) {
         guard let message else { return }
         toastStore?.show(ToastMessage(text: message, icon: icon, style: style))
     }
-
+    
     private func donutChart(_ segments: [ChartSegment]) -> some View {
         DonutChartView(
             segments: segments,
@@ -223,7 +214,7 @@ struct FinanceScreen: View {
             isLoading: false
         )
     }
-
+    
     private func chartLegend(_ segments: [ChartSegment]) -> some View {
         ChartLegendView(
             segments: segments,
@@ -257,10 +248,23 @@ struct FinanceScreen: View {
 
 private extension View {
     func screenContainerStyle() -> some View {
-        self
-            .ignoresSafeArea(.container, edges: [.top, .bottom])
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.clear)
+        modifier(FinanceScreenContainerStyle())
+    }
+}
+
+private struct FinanceScreenContainerStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .ignoresSafeArea(.container, edges: .top)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.clear)
+        } else {
+            content
+                .ignoresSafeArea(.container, edges: [.top, .bottom])
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.clear)
+        }
     }
 }
 

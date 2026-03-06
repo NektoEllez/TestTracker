@@ -25,7 +25,7 @@ struct FinanceContainerView: View {
 
     var body: some View {
         navigationContainer
-        .navigationViewStyle(StackNavigationViewStyle())
+        
         .fullScreenCover(isPresented: $viewModel.showingAddTransaction) {
             addTransactionSheet
         }
@@ -38,7 +38,7 @@ struct FinanceContainerView: View {
     }
 
     private var navigationContainer: some View {
-        NavigationView {
+        AdaptiveNavigationContainer {
             navigationContent
         }
     }
@@ -263,17 +263,17 @@ private struct FinanceFloatingActionButton: View {
 
 private struct AppSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var themeSettings = ThemeSettings.shared
+    @EnvironmentObject private var themeSettings: ThemeSettings
     @AppStorage("selected_content_language_code") private var selectedLanguageCode = "en"
 
     var body: some View {
-        NavigationView {
+        AdaptiveNavigationContainer {
             List { settingsContent }
-            .listStyle(.insetGrouped)
-            .navigationTitle(Text("settings"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { closeToolbarItem }
-            .appNavigationBarStyle()
+                .listStyle(.insetGrouped)
+                .navigationTitle(Text("settings"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { closeToolbarItem }
+                .appNavigationBarStyle()
         }
         .preferredColorScheme(themeSettings.colorScheme)
     }

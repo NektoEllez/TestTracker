@@ -6,6 +6,7 @@ final class AppStorageManager {
     static let shared = AppStorageManager()
     
     private let defaults = UserDefaults.standard
+    private let keychain = KeychainStore.shared
     
     private init() {}
     
@@ -36,11 +37,21 @@ final class AppStorageManager {
     
     var browserConfigURL: URL? {
         get {
-            guard let string = defaults.string(forKey: Keys.browserConfigURL) else { return nil }
-            return URL(string: string)
+            if let secured = keychain.string(for: Keys.browserConfigURL),
+               let url = URL(string: secured) {
+                return url
+            }
+            guard let legacy = defaults.string(forKey: Keys.browserConfigURL),
+                  let url = URL(string: legacy) else {
+                return nil
+            }
+            keychain.setString(legacy, for: Keys.browserConfigURL)
+            defaults.removeObject(forKey: Keys.browserConfigURL)
+            return url
         }
         set {
-            defaults.set(newValue?.absoluteString, forKey: Keys.browserConfigURL)
+            keychain.setString(newValue?.absoluteString, for: Keys.browserConfigURL)
+            defaults.removeObject(forKey: Keys.browserConfigURL)
         }
     }
     
@@ -48,11 +59,21 @@ final class AppStorageManager {
     
     var lastBrowserURL: URL? {
         get {
-            guard let string = defaults.string(forKey: Keys.lastBrowserURL) else { return nil }
-            return URL(string: string)
+            if let secured = keychain.string(for: Keys.lastBrowserURL),
+               let url = URL(string: secured) {
+                return url
+            }
+            guard let legacy = defaults.string(forKey: Keys.lastBrowserURL),
+                  let url = URL(string: legacy) else {
+                return nil
+            }
+            keychain.setString(legacy, for: Keys.lastBrowserURL)
+            defaults.removeObject(forKey: Keys.lastBrowserURL)
+            return url
         }
         set {
-            defaults.set(newValue?.absoluteString, forKey: Keys.lastBrowserURL)
+            keychain.setString(newValue?.absoluteString, for: Keys.lastBrowserURL)
+            defaults.removeObject(forKey: Keys.lastBrowserURL)
         }
     }
     

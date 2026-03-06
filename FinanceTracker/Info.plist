@@ -37,6 +37,8 @@
 	<string>Camera access is required for web content that uses the camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is required for web content that uses audio recording.</string>
+	<key>RemoteConfigURL</key>
+	<string>https://drive.google.com/uc?export=download&amp;id=13935lF1Cs8cRQOYRp6pnkK-TalBW5EyU</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiresFullScreen</key>

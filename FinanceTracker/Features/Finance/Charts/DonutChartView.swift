@@ -47,20 +47,29 @@ struct DonutChartView: View {
     
     private func centerLabel(chartSize: CGFloat) -> some View {
         let innerDiameter = chartSize * 0.54
-        let amountFontSize = max(20, chartSize * 0.105)
-        let subtitleFontSize = max(12, chartSize * 0.055)
+        let amountFontSize = min(max(16, chartSize * 0.105), 42)
+        let subtitleFontSize = min(max(10, chartSize * 0.055), 18)
+        let horizontalInset = max(10, innerDiameter * 0.12)
+        let verticalInset = max(6, innerDiameter * 0.09)
         
         return VStack(spacing: 2) {
             Text(centerText)
                 .font(.system(size: amountFontSize, weight: .bold, design: .rounded))
                 .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                .minimumScaleFactor(0.5)
+                .allowsTightening(true)
                 .monospacedDigit()
+                .frame(maxWidth: .infinity)
             
             Text(centerSubtext)
                 .font(.system(size: subtitleFontSize, weight: .medium, design: .rounded))
                 .foregroundColor(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
         }
+        .padding(.horizontal, horizontalInset)
+        .padding(.vertical, verticalInset)
         .frame(width: innerDiameter, height: innerDiameter)
         .background(
             Circle()

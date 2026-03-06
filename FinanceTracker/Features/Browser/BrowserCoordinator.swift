@@ -14,6 +14,7 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     private weak var forwardSwipeGesture: UISwipeGestureRecognizer?
     private var lastRefreshTime: CFAbsoluteTime = 0
     private let throttleInterval: CFAbsoluteTime = 2.5
+    private let allowedSchemes: Set<String> = ["http", "https", "about"]
 
     init(viewModel: BrowserViewModel, onFallbackToFinance: (() -> Void)? = nil) {
         self.viewModel = viewModel
@@ -112,6 +113,15 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.cancel)
+            return
+        }
+        let scheme = url.scheme?.lowercased() ?? ""
+        guard allowedSchemes.contains(scheme) else {
+            decisionHandler(.cancel)
+            return
+        }
         decisionHandler(.allow)
     }
     
@@ -123,7 +133,9 @@ final class BrowserCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         for navigationAction: WKNavigationAction,
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        if let url = navigationAction.request.url {
+        if let url = navigationAction.request.url,
+           let scheme = url.scheme?.lowercased(),
+           allowedSchemes.contains(scheme) {
             browser.load(URLRequest(url: url))
         }
         return nil

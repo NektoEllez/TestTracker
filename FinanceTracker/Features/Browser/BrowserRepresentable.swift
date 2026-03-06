@@ -3,7 +3,7 @@ import WebKit
 import UIKit
 
 struct BrowserRepresentable: UIViewRepresentable {
-    @ObservedObject var viewModel: BrowserViewModel
+    var viewModel: BrowserViewModel
     @Environment(\.browserAppearanceProvider) private var appearanceProvider
     let colorScheme: ColorScheme
     var onFallbackToFinance: (() -> Void)?

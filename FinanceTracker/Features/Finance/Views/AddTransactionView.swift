@@ -43,16 +43,9 @@ struct AddTransactionView: View {
             }
     }
 
-    @ViewBuilder
     private var navigationContainer: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                formContent
-            }
-        } else {
-            NavigationView {
-                formContent
-            }
+        AdaptiveNavigationContainer {
+            formContent
         }
     }
 
@@ -243,11 +236,6 @@ struct AddTransactionView: View {
 
     private func endEditing() {
         focusedField = nil
-        dismissKeyboard()
-    }
-    
-    private func dismissKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func localized(_ key: String) -> String {

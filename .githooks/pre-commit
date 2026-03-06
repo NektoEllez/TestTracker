@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+GLOBAL_HOOK="$HOME/.githooks/pre-commit"
+
+if [[ -x "$GLOBAL_HOOK" ]]; then
+  "$GLOBAL_HOOK"
+else
+  echo "⚠️ Global pre-commit hook not found at $GLOBAL_HOOK"
+fi
+
+"$REPO_ROOT/scripts/quality-gate.sh" fast

@@ -3,7 +3,7 @@ import Combine
 import WebKit
 
 @MainActor
-class BrowserViewModel: ObservableObject {
+final class BrowserViewModel: ObservableObject {
     @Published var currentURL: URL
     @Published var isLoading: Bool = true
     @Published var estimatedProgress: Double = 0

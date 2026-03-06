@@ -15,7 +15,7 @@ enum RootEvent: Sendable {
 }
 
 @MainActor
-class RootViewModel: ObservableObject {
+final class RootViewModel: ObservableObject {
     @Published var appState: AppState = .splash
 
     private let configService: ConfigServiceProtocol

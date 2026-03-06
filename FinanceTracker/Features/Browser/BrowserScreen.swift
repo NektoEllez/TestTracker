@@ -35,6 +35,7 @@ struct BrowserScreen: View {
                 onFallbackToFinance: onFallbackToFinance
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.container, edges: [.top, .bottom])
 
             if isSettingsOverlayEnabled {
                 settingsToolbar
@@ -169,13 +170,13 @@ private struct ContentLanguagePickerSheet: View {
     @State private var pendingSelectionCode: String?
 
     var body: some View {
-        NavigationView {
+        AdaptiveNavigationContainer {
             List { pickerContent }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { closeToolbarItem }
-            .appNavigationBarStyle()
+                .listStyle(.insetGrouped)
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { closeToolbarItem }
+                .appNavigationBarStyle()
         }
     }
 

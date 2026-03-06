@@ -10,8 +10,15 @@ extension Bundle {
         table: String? = nil,
         localeProvider: (any LocaleProviding)? = nil
     ) -> String {
-        let provider = localeProvider ?? PlatformResolver.makeLocaleProvider()
-        let langCode = provider.languageCode(from: locale)
+        let langCode: String
+        if let localeProvider {
+            langCode = localeProvider.languageCode(from: locale)
+        } else {
+            langCode = locale.languageCode
+                ?? locale.identifier.components(separatedBy: "-").first
+                ?? locale.identifier.components(separatedBy: "_").first
+                ?? "en"
+        }
         guard let path = path(forResource: langCode, ofType: "lproj"),
               let bundle = Bundle(path: path) else {
             return localizedString(forKey: key, value: key, table: table)

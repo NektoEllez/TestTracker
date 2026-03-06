@@ -31,8 +31,8 @@ extension View {
         modifier(ViewModifiers.ScrollReader())
     }
 
-    // MARK: - System Bottom Bar
-    func systemBottomBar(showDivider: Bool = true) -> some View {
+    // MARK: - Legacy Bottom Bar
+    func legacySystemBottomBar(showDivider: Bool = true) -> some View {
         self
             .safeAreaInset(edge: .bottom) {
                 Rectangle()
@@ -48,21 +48,25 @@ extension View {
     // MARK: - Scroll Edge Effect with Bottom Bar
     func scrollEdgeWithBottomBar() -> some View {
         apply { base in
-            if #available(iOS 16.0, *) {
+            if #available(iOS 26.0, *) {
                 base
                     .scrollContentBackground(.hidden)
                     .scrollIndicators(.hidden)
-                    .apply { view in
-                        if #available(iOS 26.0, *) {
-                            view
-                                .scrollEdgeEffectStyle(.soft, for: .top)
-                                .scrollEdgeEffectStyle(.soft, for: .bottom)
-                        } else {
-                            view.systemBottomBar()
-                        }
+                    .scrollEdgeEffectStyle(.soft, for: .top)
+                    .scrollEdgeEffectStyle(.soft, for: .bottom)
+                    .safeAreaBar(edge: .bottom) {
+                        Rectangle()
+                            .fill(.bar)
+                            .frame(height: 1)
+                            .opacity(0.3)
                     }
+            } else if #available(iOS 16.0, *) {
+                base
+                    .scrollContentBackground(.hidden)
+                    .scrollIndicators(.hidden)
+                    .legacySystemBottomBar()
             } else {
-                base.systemBottomBar()
+                base.legacySystemBottomBar()
             }
         }
     }

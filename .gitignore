@@ -44,6 +44,7 @@ fastlane/test_output/
 # Local agent configs
 .claude/
 .clinerules-*
+.githooks/
 
 # Markdown (only README allowed)
 *.md
